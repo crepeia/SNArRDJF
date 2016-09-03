@@ -1,0 +1,50 @@
+---
+title: "3. GEPHI"
+author: "Leonardo Martins"
+date: "22 de julho de 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r cars}
+#Regular expression to deal with strings
+suppressMessages(library(rgexf))
+
+#Open 2 SNA Objects 
+load("~/SNArRDJF/2 SNA Objects.RData")
+
+#Exporting to Photoshop...Ops Gephi
+print(igraph.to.gexf(full_no_zero), "~/SNArRDJF/Banco Redes R/Bancos GEXF/full_no_zero.gexf")
+print(igraph.to.gexf(var0), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var0.gexf")
+print(igraph.to.gexf(var1), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var1.gexf")
+print(igraph.to.gexf(var2), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var2.gexf")
+print(igraph.to.gexf(var3), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var3.gexf")
+print(igraph.to.gexf(var4), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var4.gexf")
+print(igraph.to.gexf(var5), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var5.gexf")
+print(igraph.to.gexf(var6), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var6.gexf")
+print(igraph.to.gexf(var7), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var7.gexf")
+print(igraph.to.gexf(var8), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var8.gexf")
+print(igraph.to.gexf(var9), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var9.gexf")
+print(igraph.to.gexf(var10), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var10.gexf")
+print(igraph.to.gexf(var11), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var11.gexf")
+print(igraph.to.gexf(var12), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var12.gexf")
+print(igraph.to.gexf(var13), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var13.gexf")
+print(igraph.to.gexf(var14), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var14.gexf")
+print(igraph.to.gexf(var15), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var15.gexf")
+print(igraph.to.gexf(var16), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var16.gexf")
+print(igraph.to.gexf(var17), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var17.gexf")
+print(igraph.to.gexf(var18), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var18.gexf")
+print(igraph.to.gexf(var19), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var19.gexf")
+print(igraph.to.gexf(var20), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var20.gexf")
+print(igraph.to.gexf(var21), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var21.gexf")
+print(igraph.to.gexf(var22), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var22.gexf")
+print(igraph.to.gexf(var23), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var23.gexf")
+print(igraph.to.gexf(var24), "~/SNArRDJF/Banco Redes R/Bancos GEXF/var24.gexf")
+print(igraph.to.gexf(atividade), "~/SNArRDJF/Banco Redes R/Bancos GEXF/atividade.gexf")
+print(igraph.to.gexf(confianca), "~/SNArRDJF/Banco Redes R/Bancos GEXF/confianca.gexf")
+print(igraph.to.gexf(acesso), "~/SNArRDJF/Banco Redes R/Bancos GEXF/acesso.gexf")
+print(igraph.to.gexf(total), "~/SNArRDJF/Banco Redes R/Bancos GEXF/total.gexf")
+```

@@ -1,0 +1,137 @@
+---
+title: "4. Complete Vertex Data Frame"
+author: "Leonardo Martins"
+date: "18 de julho de 2016"
+output: html_document
+---
+#1. Setup
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#2. Loading object from script 2. Social Network Analysis - consider update those objects in case you ar not sure about repository status 
+```{r}
+load("~/SNArRDJF/2 SNA Objects.RData") 
+```
+
+##3. Reload packages
+```{r packages, message=TRUE, warning=TRUE}
+suppressMessages(require(XLConnect)) #packcage to extract xls mutiple sheets
+suppressMessages(require(readxl)) #packcage to read xls files
+suppressMessages(require(psych)) #return some descriptives stats
+suppressMessages(require(igraph)) #load package for social network analysis
+suppressMessages(require(networkD3)) #load package for sankey network
+suppressMessages(library(rgexf)) #Regular expression to deal with strings
+suppressMessages(library(reshape2)) #Used to manipulate matrix into dataframe with diferent shapes
+suppressMessages(library(igraph)) # SNA package 
+suppressMessages(library(miniCRAN))
+suppressMessages(library(magrittr))
+suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+suppressMessages(library(feather))
+suppressMessages(library(visNetwork))
+suppressMessages(library(knitr))
+suppressMessages(library(DT))
+suppressMessages(library(stringr))
+library(RColorBrewer)
+library(car)
+#library(gplots)
+#library(sna)
+```
+
+#4. Looking at the vertices
+```{r}
+V(full_no_zero)
+```
+
+#5. Looking at the edges
+```{r}
+E(full_no_zero)
+```
+
+#6. Plot Data
+```{r}
+#plot(full_no_zero) - it's not necessary - just in case to check something weird
+```
+
+#7. List of all vertex attributes
+```{r}
+list.vertex.attributes(full_no_zero)
+```
+
+#8. Easy code to recode vertex attributes
+```{r}
+#V(full_no_zero)$color <- recode(V(full_no_zero)$name, "'alink' = 'maroon'; else= 'yellow'")
+```
+
+#9. List of all vertex attributes
+```{r}
+list.edge.attributes(full_no_zero)
+```
+
+#10. Easy code to recode edge weights
+```{r}
+#E(full_no_zero)$weight <- recode(E(full_no_zero)$strength, "'1' = 1; '2' = 3; '3' = 7; else = 1")
+```
+
+
+#4. Creating Vectors to pass means for each vertex
+```{r}
+full_no_zero_sp_in_vec <- vector()
+full_no_zero_sp_out_vec <- vector()
+full_no_zero_reach_in_vec <- vector()
+full_no_zero_reach_out_vec <- vector()
+
+#  Looping to pass mean of reachability and shortest path to each vertex
+for (i in 1:vcount(full_no_zero))
+  full_no_zero_reach_in_vec[i] <- mean(full_no_zero_reach_in[i,])
+  V(full_no_zero)$full_no_zero_reach_in_vec[i] <- mean(full_no_zero_reach_in[i,]) #adding to igraph object
+  
+  full_no_zero_reach_out_vec[i] <- mean(full_no_zero_reach_out[i,])
+  V(full_no_zero)$full_no_zero_reach_out_vec[i] <- mean(full_no_zero_reach_out[i,]) #adding to igraph object
+  
+  full_no_zero_sp_in_vec[i] <- mean(full_no_zero_sp_in[i,])
+  V(full_no_zero)$full_no_zero_sp_in_vec[i] <- mean(full_no_zero_sp_in[i,]) #adding to igraph object
+  
+  full_no_zero_sp_out_vec[i] <- mean(full_no_zero_sp_out[i,])
+  V(full_no_zero)$full_no_zero_sp_out_vec[i] <- mean(full_no_zero_sp_out[i,]) #adding to igraph object
+
+```
+
+#4.1 Creating Vectors to pass means for each vertex
+```{r}
+full_no_zero_node_stats_df <- cbind(
+full_no_zero_indegree,
+full_no_zero_outdegree,
+full_no_zero_totaldegree,
+full_no_zero_incloseness,
+full_no_zero_outcloseness,
+full_no_zero_totalcloseness,
+full_no_zero_betweenness,
+full_no_zero_eigenvector,
+full_no_zero_reach_in_vec, 
+full_no_zero_reach_out_vec, 
+full_no_zero_sp_in_vec, 
+full_no_zero_sp_out_vec)
+
+write.csv(full_no_zero_node_stats_df, "~/SNArRDJF/Banco Redes R/Bancos CSV/full_no_zero_node_stats_df.csv")
+```
+
+
+```{r}
+# Re-generate dataframes for both nodes and edges, now containing
+# calculated network attributes
+full_no_zero_node_list <- get.data.frame(full_no_zero, what = "vertices")
+
+#Write Node List
+write.csv(full_no_zero_node_list, "~/SNArRDJF/Banco Redes R/Bancos CSV/full_no_zero_node_list_df.csv")
+
+# Determine a community for each edge. If two nodes belong to the
+# same community, label the edge with that community. If not,
+# the edge community value is 'NA'
+full_no_zero_edge_list <- get.data.frame(full_no_zero, what = "edges") %>%
+  inner_join(node_list %>% select(name, comm), by = c("from" = "name")) %>%
+  inner_join(node_list %>% select(name, comm), by = c("to" = "name")) %>%
+  mutate(group = ifelse(comm.x == comm.y, comm.x, NA) %>% factor())
+```
+

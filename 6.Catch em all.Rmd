@@ -1,0 +1,234 @@
+---
+title: "Catch'em all"
+author: "Leonardo Martins"
+date: "24 de julho de 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+Disseminating the code
+
+```{r}
+#Breeding Reports Like Crazy
+library(rmarkdown)
+require(dplyr)
+```
+
+```{r}
+#It only works in Unix (Linux or OSX) - Using Stream Editor from Bash
+x<-"sed -e 's/full_no_zero/x2/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/x2.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var0/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var0.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var1/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var1.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var2/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var2.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var3/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var3.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var4/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var4.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var5/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var5.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var6/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var6.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var7/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var7.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var8/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var8.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var9/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var9.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var10/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var10.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var11/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var11.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var12/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var12.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var13/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var13.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var14/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var14.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var15/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var15.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var16/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var16.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var17/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var17.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var18/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var18.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var19/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var19.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var20/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var20.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var21/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var21.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var22/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var22.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var23/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var23.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var24/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/var24.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/atividade/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/atividade.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/acesso/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/acesso.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/acesso_positivo/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/acesso_positivo.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/acesso_negativo/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/acesso_negativo.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/confianca/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/confianca.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/acessoeconfianca/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/acessoeconfianca.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/total/g' ~/SNArRDJF/full_no_zero.Rmd > ~/SNArRDJF/Scripts_Original/total.Rmd" %>% system()
+```
+
+#Breeding Fancy Names Reports Like Crazy
+```{r}
+x<-"sed -e 's/fuull_no_zero_fancy/1.1.CENTRALIDADE - REDE COMPLETA (full_no_zero)/g' ~/SNArRDJF/full_no_zero.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/1.1.CENTRALIDADE_REDE_COMPLETA.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/1.2.CENTRALIDADE - ALGUM RELACIONAMENTO (x2)/g' ~/SNArRDJF/Scripts_Original/x2.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/1.2.CENTRALIDADE_REDE_COMPLETA_ALGUM_RELACIONAMENTO.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/2.CENTRALIDADE_RELACIONAMENTO FORMAL (var0)/g' ~/SNArRDJF/Scripts_Original/var0.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/2.CENTRALIDADE_RELACIONAMENTO_FORMAL.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/3.CENTRALIDADE_REFERENCIA DE ENVIO (var1)/g' ~/SNArRDJF/Scripts_Original/var1.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/3.CENTRALIDADE_REFERENCIA_DE_ENVIO.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/4.CENTRALIDADE_REFERENCIA DE RECEBIMENTO CONTRAREFERENCIA (var2)/g' ~/SNArRDJF/Scripts_Original/var2.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/4.CENTRALIDADE_REFERENCIA_DE_RECEBIMENTO_CONTRAREFERENCIA.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/5.CENTRALIDADE_COORDENAÇÃO CONJUNTA DE CASOS (var3)/g' ~/SNArRDJF/Scripts_Original/var3.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/5.CENTRALIDADE_COORDENAÇÃO_CONJUNTA_DE_CASOS.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/6.CENTRALIDADE_PROGRAMAS EM CONJUNTO (var4)/g' ~/SNArRDJF/Scripts_Original/var4.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/6.CENTRALIDADE_PROGRAMAS_EM_CONJUNTO.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/7.CENTRALIDADE_OFERTA DE TREINAMENTOS CAPACITAÇÕES (var5)/g' ~/SNArRDJF/Scripts_Original/var5.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/7.CENTRALIDADE_OFERTA_DE_TREINAMENTOS_CAPACITAÇÕES.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/8.CENTRALIDADE_RECEBER TREINAMENTOS CAPACITAÇÕES (var6)/g' ~/SNArRDJF/Scripts_Original/var6.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/8.CENTRALIDADE_RECEBER_TREINAMENTOS_CAPACITAÇÕES.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/9.CENTRALIDADE_ACESSO A) Este serviço mostra-se disponível para realização de ativades em conjunto. (var7)/g' ~/SNArRDJF/Scripts_Original/var7.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/9.CENTRALIDADE_ACESSO_A_realização_de_ativades_em_conjunto.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/10.CENTRALIDADE_ACESSO B) O horário de funcionamento deste serviço possibilita a realização de ações em conjunto. (var8)/g' ~/SNArRDJF/Scripts_Original/var8.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/10.CENTRALIDADE_ACESSO_B_realização_de_ações_em_conjunto.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/11.CENTRALIDADE_ACESSO C) Este serviço disponibiliza informações sobre suas ativades para o seu serviço. (var9)/g' ~/SNArRDJF/Scripts_Original/var9.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/11.CENTRALIDADE_ACESSO_C_disponibiliza_informações.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/12.CENTRALIDADE_ACESSO D) O seu serviço consegue acessar facilmente informações deste serviço. (var10)/g' ~/SNArRDJF/Scripts_Original/var10.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/12.CENTRALIDADE_ACESSO_D_acessar_facilmente_informações.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/13.CENTRALIDADE_ACESSO E) Os canais de comunicação com este serviço são suficientes para realização de ações em conjunto. (var11)/g' ~/SNArRDJF/Scripts_Original/var11.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/13.CENTRALIDADE_ACESSO_E_canais_de_comunicação_suficientes.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/14.CENTRALIDADE_ACESSO F) Seu serviço tem facilade de entrar em contato com este serviço para realizar ativades em conjunto (var12)./g' ~/SNArRDJF/Scripts_Original/var12.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/14.CENTRALIDADE_ACESSO_F_entrar_em_contato_ara_realizar_ativades.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/15.CENTRALIDADE_ACESSO G) O acesso geográfico a este serviço impede a realização de ativades em conjunto. (var13) /g' ~/SNArRDJF/Scripts_Original/var13.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/15.CENTRALIDADE_ACESSO_G_O_acesso_geográfico_impede.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/16.CENTRALIDADE_ACESSO H) O custo para acessar este serviço impede a realização de ativades em conjunto. (var14)/g' ~/SNArRDJF/Scripts_Original/var14.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/16.CENTRALIDADE_ACESSO_H_O_custo_para_acessar.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/17.CENTRALIDADE_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)/g' ~/SNArRDJF/Scripts_Original/var15.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/17.CENTRALIDADE_ACESSO_I_O_tempo_gasto_para_acessar_este_serviço.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/18.CENTRALIDADE_CONFIANÇA A) Confia na qualificação profissional da equipe deste serviço.(var16)/g' ~/SNArRDJF/Scripts_Original/var16.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/18.CENTRALIDADE_CONFIANÇA_A_Confia_na_qualificação_profissional.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/19.CENTRALIDADE_CONFIANÇA B) Confia na capacade técnica da equipe deste serviço. (var17)/g' ~/SNArRDJF/Scripts_Original/var17.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/19.CENTRALIDADE_CONFIANÇA_B_Confia_na_capacade_técnica.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/20.CENTRALIDADE_CONFIANÇA C) Confia nas ações realizadas por este serviço. (var18)/g' ~/SNArRDJF/Scripts_Original/var18.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/20.CENTRALIDADE_CONFIANÇA_C_Confia_nas_ações_realizadas.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/21.CENTRALIDADE_CONFIANÇA D) Confia em compartilhar informações internas com este serviço. (var19) /g' ~/SNArRDJF/Scripts_Original/var19.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/21.CENTRALIDADE_CONFIANÇA_D_Confia_em_compartilhar_informações.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/22.CENTRALIDADE_CONFIANÇA E) Confia nas informações recebas deste serviço (var20)./g' ~/SNArRDJF/Scripts_Original/var20.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/22.CENTRALIDADE_CONFIANÇA_E_Confia_nas_informações_recebidas.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/23.CENTRALIDADE_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21)./g' ~/SNArRDJF/Scripts_Original/var21.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/23.CENTRALIDADE_CONFIANÇA_F_Confia_em_realizar_ações_conjuntas.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/24.CENTRALIDADE_CONFIANÇA G) Está satisfeito com as ações desempenhadas por este serviço (var22)./g' ~/SNArRDJF/Scripts_Original/var22.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/24.CENTRALIDADE_CONFIANÇA_G_Está_satisfeito_com_as_ações_desempenhadas.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/25.CENTRALIDADE_CONFIANÇA H) Espera que o relacionamento com este serviço continue nos próximos anos (var23)./g' ~/SNArRDJF/Scripts_Original/var23.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/25.CENTRALIDADE_CONFIANÇA_H_Relacionamento_continue_nos_próximos_anos.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/26.CENTRALIDADE_CONFIANÇA I) Espera que o relacionamento com este serviço se fortaleça nos próximos anos. (var24)/g' ~/SNArRDJF/Scripts_Original/var24.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/26.CENTRALIDADE_CONFIANÇA_I_Relacionamento_se_fortaleça_nos_próximos_anos.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/27.CENTRALIDADE_ATIVIDADE/g' ~/SNArRDJF/Scripts_Original/atividade.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/27.CENTRALIDADE_ATIVIDADE.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/28.CENTRALIDADE_ACESSO/g' ~/SNArRDJF/Scripts_Original/acesso.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/28.CENTRALIDADE_ACESSO.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/29.CENTRALIDADE_ACESSO_POSITIVO/g' ~/SNArRDJF/Scripts_Original/acesso_positivo.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/29.CENTRALIDADE_ACESSO_POSITIVO.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/30.CENTRALIDADE_ACESSO_NEGATIVO/g' ~/SNArRDJF/Scripts_Original/acesso_negativo.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/30.CENTRALIDADE_ACESSO_NEGATIVO.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/31.CENTRALIDADE_CONFIANÇA/g' ~/SNArRDJF/Scripts_Original/confianca.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/31.CENTRALIDADE_CONFIANÇA.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/32.CENTRALIDADE_ACESSO E CONFIANÇA/g' ~/SNArRDJF/Scripts_Original/acessoeconfianca.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/32.CENTRALIDADE_ACESSO_E_CONFIANÇA.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/33.CENTRALIDADE_TOTAL/g' ~/SNArRDJF/Scripts_Original/total.Rmd >  ~/SNArRDJF/Scripts_Finais/Centralidade/33.CENTRALIDADE_TOTAL.Rmd" %>% system()
+```
+
+```{r}
+render("~/SNArRDJF/Scripts_Finais/Centralidade/1.1.CENTRALIDADE_REDE_COMPLETA.Rmd","all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/1.2.CENTRALIDADE_REDE_COMPLETA_ALGUM_RELACIONAMENTO.Rmd","all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/2.CENTRALIDADE_RELACIONAMENTO_FORMAL.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/3.CENTRALIDADE_REFERENCIA_DE_ENVIO.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/4.CENTRALIDADE_REFERENCIA_DE_RECEBIMENTO_CONTRAREFERENCIA.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/5.CENTRALIDADE_COORDENAÇÃO_CONJUNTA_DE_CASOS.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/6.CENTRALIDADE_PROGRAMAS_EM_CONJUNTO.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/7.CENTRALIDADE_OFERTA_DE_TREINAMENTOS_CAPACITAÇÕES.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/8.CENTRALIDADE_RECEBER_TREINAMENTOS_CAPACITAÇÕES.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/9.CENTRALIDADE_ACESSO_A_realização_de_ativades_em_conjunto.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/10.CENTRALIDADE_ACESSO_B_realização_de_ações_em_conjunto.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/11.CENTRALIDADE_ACESSO_C_disponibiliza_informações.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/12.CENTRALIDADE_ACESSO_D_acessar_facilmente_informações.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/13.CENTRALIDADE_ACESSO_E_canais_de_comunicação_suficientes.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/14.CENTRALIDADE_ACESSO_F_entrar_em_contato_ara_realizar_ativades.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/15.CENTRALIDADE_ACESSO_G_O_acesso_geográfico_impede.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/16.CENTRALIDADE_ACESSO_H_O_custo_para_acessar.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/17.CENTRALIDADE_ACESSO_I_O_tempo_gasto_para_acessar_este_serviço.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/18.CENTRALIDADE_CONFIANÇA_A_Confia_na_qualificação_profissional.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/19.CENTRALIDADE_CONFIANÇA_B_Confia_na_capacade_técnica.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/20.CENTRALIDADE_CONFIANÇA_C_Confia_nas_ações_realizadas.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/21.CENTRALIDADE_CONFIANÇA_D_Confia_em_compartilhar_informações.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/22.CENTRALIDADE_CONFIANÇA_E_Confia_nas_informações_recebidas.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/23.CENTRALIDADE_CONFIANÇA_F_Confia_em_realizar_ações_conjuntas.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/24.CENTRALIDADE_CONFIANÇA_G_Está_satisfeito_com_as_ações_desempenhadas.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/25.CENTRALIDADE_CONFIANÇA_H_Relacionamento_continue_nos_próximos_anos.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/26.CENTRALIDADE_CONFIANÇA_I_Relacionamento_se_fortaleça_nos_próximos_anos.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/27.CENTRALIDADE_ATIVIDADE.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/28.CENTRALIDADE_ACESSO.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/29.CENTRALIDADE_ACESSO_POSITIVO.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/30.CENTRALIDADE_ACESSO_NEGATIVO.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/31.CENTRALIDADE_CONFIANÇA.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/32.CENTRALIDADE_ACESSO_E_CONFIANÇA.Rmd" ,"all")
+
+render("~/SNArRDJF/Scripts_Finais/Centralidade/33.CENTRALIDADE_TOTAL.Rmd" ,"all")
+```
+
+```{r}
+save.image("~/SNArRDJF/6.Cathemall.RData")
+```
+
