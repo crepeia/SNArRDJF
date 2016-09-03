@@ -1,0 +1,303 @@
+---
+title: "SNA Reciprocity Distance Path 1.1 - REDE COMPLETA (full_no_zero)"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 1.1 - REDE COMPLETA (full_no_zero)
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/9_dyad_triad_full_no_zero.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+suppressMessages(library(car))
+suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+suppressMessages(library(miniCRAN))
+suppressMessages(library(magrittr))
+suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+suppressMessages(library(feather))
+suppressMessages(library(visNetwork))
+suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#full_no_zero<-simplify(full_no_zero) #Simplify
+```
+
+#Distances and paths
+
+Defined as the shortest distance between each pair of nodes in the network (in both directions for directed graphs).
+
+##Average path length between any two given nodes
+
+Calculates the average path length in a graph, by calculating the shortest paths between all pairs of vertices (both ways for directed graphs). 
+
+This function does not consider edge weights currently and uses a breadth-first search.
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+mean_distance(full_no_zero, directed=T, unconnected = T)
+```
+##Shortest Paths
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Shortest Paths
+full_no_zero_sp_in <- shortest.paths(full_no_zero, mode='in', weights=E(full_no_zero)$full_no_zero) #in
+
+full_no_zero_sp_out <- shortest.paths(full_no_zero, mode='out', weights=E(full_no_zero)$full_no_zero) # out
+
+full_no_zero_sp_all <- shortest.paths(full_no_zero, mode='all', weights=E(full_no_zero)$full_no_zero) # all
+```
+##Descriptive Shortest Paths - IN
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(full_no_zero_sp_in[which(full_no_zero_sp_in != Inf)])
+sd(full_no_zero_sp_in[which(full_no_zero_sp_in != Inf)])
+```
+##Descriptive  Shortest Paths - OUT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(full_no_zero_sp_out[which(full_no_zero_sp_out != Inf)])
+sd(full_no_zero_sp_out[which(full_no_zero_sp_out != Inf)])
+```
+
+##Descriptive  Shortest Paths - ALL
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(full_no_zero_sp_all[which(full_no_zero_sp_all != Inf)])
+sd(full_no_zero_sp_all[which(full_no_zero_sp_all != Inf)])
+```
+
+#Length of all shortest paths in the graph:
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#All shortest paths 
+distances_dist_all_full_no_zero<-distances(full_no_zero, mode="all", weights=E(full_no_zero)$full_no_zero)
+#distances_sp_all_full_no_zero
+
+distances_dist_all_full_no_zero[distances_dist_all_full_no_zero=="Inf"]<-NA
+
+#Mean Reachbility by Vertex
+distances_sp_all_full_no_zero_vec <- vector()
+for (i in 1:vcount(full_no_zero)) {
+    distances_sp_all_full_no_zero_vec[i] <- 
+    mean(distances_dist_all_full_no_zero[i,],na.rm=T)
+}
+#Adding to igraph object
+V(full_no_zero)$sp_all<-distances_sp_all_full_no_zero_vec
+```
+
+#In shortest paths 
+```{r}
+distances_dist_in_full_no_zero<-distances(full_no_zero, mode="in",weights=E(full_no_zero)$full_no_zero)
+#distances_sp_in_full_no_zero
+
+distances_dist_in_full_no_zero[distances_dist_in_full_no_zero=="Inf"]<-NA
+
+#Mean Reachbility by Vertex
+distances_sp_in_full_no_zero_vec <- vector()
+for (i in 1:vcount(full_no_zero)) {
+    distances_sp_in_full_no_zero_vec[i] <- mean(distances_dist_in_full_no_zero[i,], na.rm=T)
+}
+
+#Adding to igraph object
+V(full_no_zero)$sp_in<-distances_sp_in_full_no_zero_vec
+```
+
+#Out shortest paths 
+```{r}
+distances_dist_out_full_no_zero<-distances(full_no_zero, mode="out", weights=E(full_no_zero)$full_no_zero)
+
+distances_dist_out_full_no_zero[distances_dist_out_full_no_zero=="Inf"]<-NA
+
+#Mean Reachbility by Vertex
+distances_sp_out_full_no_zero_vec <- vector()
+for (i in 1:vcount(full_no_zero)) {
+    distances_sp_out_full_no_zero_vec[i] <- 
+    mean(distances_dist_out_full_no_zero[i,], na.rm = T)
+}
+
+#Adding to igraph object
+V(full_no_zero)$sp_out<-distances_sp_out_full_no_zero_vec
+```
+
+#Reachbility Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+#Creating a datagrame of measures
+full_no_zero_shortpath_df <- data.frame(distances_sp_in_full_no_zero_vec, distances_sp_out_full_no_zero_vec, distances_sp_all_full_no_zero_vec) %>% round(3)
+
+#Adding type
+full_no_zero_shortpath_df <-cbind(full_no_zero_shortpath_df, V(full_no_zero)$LABEL_COR)
+
+#Adding names
+names(full_no_zero_shortpath_df) <- c("Short Path IN", "Short Path OUT","Short Path ALL","Type") 
+
+#Ordering Variables
+full_no_zero_shortpath_df<-full_no_zero_shortpath_df[c("Type", "Short Path IN", "Short Path OUT","Short Path ALL")]
+```
+## General tabel - DT 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(full_no_zero_shortpath_df, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(full_no_zero_shortpath_df, by=list(full_no_zero_shortpath_df$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Short Path IN(M)", "Short Path OUT(M)","Short Path ALL(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(full_no_zero_shortpath_df, by=list(full_no_zero_shortpath_df$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type", "Short Path IN(SD)", "Short Path OUT(SD)","Short Path ALL(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+```
+##Merging mean and standart deviation
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(3) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[,c("Group","Short Path IN(M)","Short Path IN(SD)","Short Path OUT(M)","Short Path OUT(SD)","Short Path ALL(M)","Short Path ALL(SD)")]
+```
+##Final table with round - Short Path
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Histogram from shortest path length between each pair of vertices. 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+sp<-distance_table(full_no_zero, directed = TRUE)
+short_paths<-c(sp$unconnected, sp$res)
+labels<-c("unconnected", "one", "two","three", "four", "five", "six")
+sphist<-as.data.frame(cbind(labels, short_paths))
+names(sphist)<-c("Short Paths Length - Vertex Pairs","Count")
+datatable(sphist)
+```
+
+#Distance from CAPSAD - just as an example for futher explortion
+```{r}
+#Setting distance from an vertex
+
+full_no_zero_dist.from.CAPSAD <- distances(full_no_zero, v=V(full_no_zero)[V2_LABEL_ID=="q170_CAPS...CAPS.AD"], to=V(full_no_zero), weights=E(full_no_zero)$full_no_zero)
+
+#Saving distance on igraph object 
+V(full_no_zero)$full_no_zero_dist.from.CAPSAD<-full_no_zero_dist.from.CAPSAD
+
+full_no_zero_dist.from.CAPSAD[full_no_zero_dist.from.CAPSAD=="Inf"]<-10
+
+set.seed(123)
+# Set colors to plot distances:
+oranges <- colorRampPalette(c("dark red", "gold"))
+col <- oranges(max(full_no_zero_dist.from.CAPSAD)+1)
+col <- col[full_no_zero_dist.from.CAPSAD+1]
+
+#Saving as Vertex properties
+V(full_no_zero)$col<-col
+
+#Plotting based only on degree measures 
+edge.start <- ends(full_no_zero, es=E(full_no_zero), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(full_no_zero))
+maxC <- rep(Inf, vcount(full_no_zero))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(full_no_zero, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(full_no_zero)$full_no_zero)
+
+#Plotting distance from CAPSAD 
+plot(full_no_zero, 
+     layout=co,
+     edge.color=V(full_no_zero)$col[edge.start],
+     edge.arrow.size=(betweenness(full_no_zero, weights = E(full_no_zero)$full_no_zero)+1)/100000,
+     edge.width=E(full_no_zero)$full_no_zero/10*mean(E(full_no_zero)$full_no_zero),
+     edge.curved = TRUE,
+     vertex.color=col,
+     vertex.size=sqrt(degree(full_no_zero))*5,
+     vertex.label=full_no_zero_dist.from.CAPSAD,
+     vertex.label.color="white",
+     vertex.frame.color="#ffffff",
+     vertex.label.cex=log(degree(full_no_zero))/5,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(full_no_zero)$full_no_zero_dist.from.CAPSAD
+b<-V(full_no_zero)$col
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Distance from CAPS AD - 1.1 - REDE COMPLETA (full_no_zero)", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf("Avarege path length: %.2f",
+     mean_distance(full_no_zero, directed=T, unconnected = T)
+     )
+             )
+```
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/10_distance_paths_full_no_zero.RData") 
+```
+

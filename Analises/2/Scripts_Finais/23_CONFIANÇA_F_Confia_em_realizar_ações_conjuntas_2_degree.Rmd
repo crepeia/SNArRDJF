@@ -1,0 +1,1049 @@
+---
+title: "SNA Degrees 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21)."
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/var21_data.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+#suppressMessages(library(car))
+#suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+#suppressMessages(library(miniCRAN))
+#suppressMessages(library(magrittr))
+#suppressMessages(library(keyplayer))
+#suppressMessages(library(dplyr))
+#suppressMessages(library(feather))
+#suppressMessages(library(visNetwork))
+#suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#var21<-simplify(var21) #Simplify
+```
+
+
+#Centrality Measures
+
+• For undirected graphs:
+
+– Actor centrality - involvement (connections) with other actors
+
+• For directed graphs:
+
+– Actor centrality - source of the ties (outgoing edges)
+
+– Actor prestige - recipient of many ties (incoming edges)
+
+In general - high centrality degree means direct contact with many other actors
+
+##Centrality Degree (number of ties/nearest neighbors).
+
+##Saving in igrpah object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var21)$indegree<-degree(var21, mode = "in") # Actor prestige - recipient of many ties (incoming edges)
+V(var21)$outdegree <- degree(var21, mode = "out") # Actor centrality - source of the ties (outgoing edges)
+V(var21)$totaldegree <- degree(var21, mode = "total")
+```
+##Saving in Global Environment as an object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_indegree<-degree(var21, mode = "in")
+var21_outdegree<-degree(var21, mode = "out")
+var21_totaldegree<-degree(var21, mode = "total")
+```
+
+#Centrality Degree Descriptive Statistics - non-normalized
+
+##Centrality Degree Descriptive Statistics - In
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##in
+summary(var21_indegree)
+sd(var21_indegree)
+```  
+##Histogram var21 degree - In
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var21, mode = "in", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(var21)/10, main="Histogram of Indegree Nodes - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).")
+```  
+
+##Centrality Degree Descriptive Statistics - Out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##out
+summary(var21_outdegree)
+sd(var21_outdegree)
+```  
+
+##Histogram var21 degree - Out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var21, mode = "out", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(var21)/10, main="Histogram of Outdegree Nodes - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).")
+```  
+
+##Centrality Degree Descriptive Statistics - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##all
+summary(var21_totaldegree)
+sd(var21_totaldegree)
+```  
+##Histogram var21 degree - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var21, mode = "all", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(var21)/10, main="Histogram of All Degree Nodes - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).")
+```  
+
+#Compute strength - weighted
+
+A slightly more nuanced metric is “strength centrality”, which is defined as the sum of the weights of all the connections for a given node. This is also sometimes called “weighted degree centrality”
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var21)$var21_strength<- strength(var21, weights=E(var21)$weight)
+var21_strength<- strength(var21, weights=E(var21)$weight)
+```
+##Strength Stats
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var21_strength)
+sd(var21_strength)
+```
+##Histogram var21 degree - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(strength(var21, weights=E(var21)$weight), ylab="Frequency", xlab="Degree",  breaks=vcount(var21)/10, main="Histogram of Strength Degree Nodes - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).")
+```  
+
+#Centrality Degree Normalized
+
+##Centrality Degree Normalized saving igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var21)$indegree_n<-degree(var21, mode = "in", normalized = T)
+V(var21)$outdegree_n<- degree(var21, mode = "out", normalized = T)
+V(var21)$totaldegree_n<- degree(var21, mode = "total", normalized = T)
+```
+##Saving in Global Environment as an object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_indegree_n<-degree(var21, mode = "in", normalized = T)
+var21_outdegree_n<-degree(var21, mode = "out", normalized = T)
+var21_totaldegree_n<-degree(var21, mode = "total", normalized = T)
+```
+##Centrality Degree Normalized Descriptive Statistics - in
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var21_indegree_n)
+sd(var21_indegree_n)
+```
+##Histogram var21 degree normalized - in
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var21, mode = "in", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(var21)/10, main="Histogram of Normalized Indegree Nodes - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).")
+```
+
+##Centrality Degree Normalized Descriptive Statistics - out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var21_outdegree_n)
+sd(var21_outdegree_n)
+```
+
+##Histogram var21 degree normalized - out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var21, mode = "out", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(var21)/10, main="Histogram of Normalized Outdegree Nodes - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).")
+```
+
+##Centrality Degree Normalized Descriptive Statistics - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var21_totaldegree_n)
+sd(var21_totaldegree_n)
+```
+
+##Histogram var21 degree normalized - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var21, mode = "all", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(var21)/10, main="Histogram of Normalized All Degree Nodes - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).")
+```
+
+#Centralization Degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var21)$var21_centr_degree <- centralization.degree(var21)$res
+var21_centr_degree <- centralization.degree(var21)
+```
+
+##Centralization
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_centr_degree$centralization
+```
+##Theoretical Max
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_centr_degree$theoretical_max
+```
+
+#Degree distribution considering total equal one
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_degree.distribution<-degree.distribution(var21)
+```
+
+##Degree distribution Descriptive Stats
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var21_degree.distribution)
+sd(var21_degree.distribution)
+```
+
+##Histogram var21 distribution degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree.distribution(var21), breaks=vcount(var21)/10, ylab="Frequency", xlab="Degree Distribuition", main="Histogram of Degree Distribuition - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).")
+```
+
+##Degree Probability Distribution
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dd <- degree.distribution(var21, cumulative=T, mode="all")
+```
+
+##Degree Probability Distribution - Plot Cumulative Frequency
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(dd, pch=19, cex=1, col="orange", xlab="Degree", ylab="Cumulative Frequency", main= "Cumulative Frequency of 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21). ")
+```
+
+#Log-Log Degree Distribution - Scale Free Network - Does it fit to power law ?
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dd.var21 <- degree.distribution(var21)
+d <- 1:max(degree(var21))-1
+ind <- (dd.var21 != 0)
+```
+
+##Plot Log-Log Degree Distribution
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(d[ind], 
+     dd.var21[ind], 
+     log="xy", 
+     col="blue",
+     xlab=c("Log-Degree"), 
+     ylab=c("Log-Intensity"),
+     main="Log-Log Degree Distribution For 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21)."
+     )
+```
+
+#Average Neighbor Degree versus Vertex Degree (log-log scale for 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).)
+
+The neighborhood of a given order y of a vertex v includes all vertices which are closer to v than the order. Ie. order y=0 is always v itself, order 1 is v plus its immediate neighbors, order 2 is order 1 plus the immediate neighbors of the vertices in order 1, etc.
+
+##Simplify graph first 
+```{r}
+var21_simplified<-simplify(var21)
+```
+
+
+##Average Neighbor Degree versus vertex degree (log-log scale for var21)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_a.nn.deg <- graph.knn(var21_simplified, weights =E(var21_simplified)$weight)$knn %>% round(1)
+```
+
+##Saving to igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var21_simplified)$var21_a.nn.deg <- graph.knn(var21_simplified, weights=E(var21_simplified)$weight)$knn
+```
+
+##Table Average Neighbor Degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d<-cbind(V(var21_simplified)$LABEL_COR,var21_a.nn.deg)
+datatable(d)
+```
+
+##Plotting Average Neighbor Degree versus vertex degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(degree(var21_simplified), 
+     var21_a.nn.deg, 
+     log="xy", 
+     col="goldenrod", 
+     xlab=c("Log Vertex Degree"),
+     ylab=c("Log Average Neighbor Degree"),
+     main="Average Neighbor Degree vs Vertex Degree - Log-Log Scale for 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21)."
+     )
+```
+
+#Average Weighted Neighbor Degree versus vertex degree (log-log scale for weighted 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_a.nn.deg_w <- graph.knn(var21_simplified, weights=E(var21_simplified)$weight)$knn %>% round(1)
+```
+
+##Saving to igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var21_simplified)$var21_a.nn.deg_w <-var21_a.nn.deg <- graph.knn(var21_simplified, weights=E(var21_simplified)$weight)$knn
+```
+
+##Average Weighted Neighbor Descriptive
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var21_a.nn.deg_w)
+sd(var21_a.nn.deg_w, na.rm = T)
+```
+
+##Table Average Neighbor Degree Weighted
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d<-cbind(V(var21_simplified)$LABEL_COR,var21_a.nn.deg_w)
+datatable(d)
+```
+
+##Plotting Average Neighbor Degree versus vertex degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(degree(var21_simplified), 
+     var21_a.nn.deg, 
+     log="xy", 
+     col="goldenrod", 
+     xlab=c("Log Vertex Degree"),
+     ylab=c("Log Average Neighbor Degree"),
+     main="Average Weighted Neighbor Degree vs Vertex Degree - Log-Log Scale For Weighted 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21)."
+     )
+```
+
+#Degree Centralities Dinamic Table
+
+##Getting Degree Measures
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_indegree<-degree(var21, mode = "in")
+var21_outdegree<-degree(var21, mode = "out")
+var21_totaldegree<-degree(var21, mode = "total")
+var21_strength<- strength(var21, weights=E(var21)$weight)
+var21_indegree_n<-degree(var21, mode = "in", normalized = T) %>% round(3)
+var21_outdegree_n<-degree(var21, mode = "out", normalized = T) %>% round(3)
+var21_totaldegree_n<-degree(var21, mode = "total", normalized = T) %>% round(3)
+var21_centr_degree <- centralization.degree(var21)$res
+var21_a.nn.deg <- graph.knn(var21_simplified)$knn %>% round(1)
+var21_a.nn.deg_w <- graph.knn(var21_simplified, weights=E(var21_simplified)$weight)$knn %>% round(1)
+```
+
+##Creating a dataframe of measures
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_df_degree <- data.frame(var21_indegree,
+var21_outdegree, 
+var21_totaldegree,
+var21_indegree_n, 
+var21_outdegree_n,
+var21_totaldegree_n,
+var21_strength,
+var21_centr_degree,
+var21_a.nn.deg,
+var21_a.nn.deg_w) %>% round(3)
+
+#Adding type
+var21_df_degree <-cbind(var21_df_degree, V(var21)$LABEL_COR)
+
+#Adding names
+names(var21_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+var21_df_degree<-var21_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var21_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var21_df_degree, by=list(var21_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(var21_df_degree, by=list(var21_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+##Creating a dataframe of measures (Natureza Governamental)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_df_degree <- data.frame(var21_indegree,
+var21_outdegree, 
+var21_totaldegree,
+var21_indegree_n, 
+var21_outdegree_n,
+var21_totaldegree_n,
+var21_strength,
+var21_centr_degree,
+var21_a.nn.deg,
+var21_a.nn.deg_w) %>% round(3)
+
+#Adding type
+var21_df_degree <-cbind(var21_df_degree, V(var21)$TIPO1)
+
+#Adding names
+names(var21_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+var21_df_degree<-var21_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var21_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var21_df_degree, by=list(var21_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(var21_df_degree, by=list(var21_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a dataframe of measures (Setores)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var21_df_degree <- data.frame(var21_indegree,
+var21_outdegree, 
+var21_totaldegree,
+var21_indegree_n, 
+var21_outdegree_n,
+var21_totaldegree_n,
+var21_strength,
+var21_centr_degree,
+var21_a.nn.deg,
+var21_a.nn.deg_w) %>% round(3)
+
+#Adding type
+var21_df_degree <-cbind(var21_df_degree, V(var21)$TIPO2)
+
+#Adding names
+names(var21_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+var21_df_degree<-var21_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var21_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var21_df_degree, by=list(var21_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(var21_df_degree, by=list(var21_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var21, es=E(var21), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var21))
+maxC <- rep(Inf, vcount(var21))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var21, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var21)$weight)
+
+#PLotting
+plot(var21, 
+     layout=co,
+     edge.color=V(var21)$color[edge.start],
+     edge.arrow.size=(degree(var21)+1)/(30*mean(degree(var21))),
+     edge.width=E(var21)$weight/(10*mean(E(var21)$weight)),
+     edge.curved = TRUE,
+     vertex.size=log((degree(var21)+2))*(0.5*mean(degree(var21))),
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var21,"LABEL_COR"),
+     vertex.label.cex=log(degree(var21)+2)/mean(degree(var21)),
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var21)$LABEL_COR
+b<-V(var21)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Vertex Degree Sized - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).", sub = "Source: from authors ", cex = .5)
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\n Median Out Degree: %.2f",
+     median(degree(var21, mode="in")), 
+     median(degree(var21, mode="out"))
+   ))
+```
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+#Get Variable
+V(var21)$var21_color_degree<-V(var21)$totaldegree %>% round(0)
+
+#Creating brewer pallette
+vertex_var21_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var21)$var21_color_degree)), "RdBu"))(
+            length(unique(V(var21)$var21_color_degree)))
+
+#Saving as Vertex properties 
+V(var21)$vertex_var21_color_degree<- vertex_var21_color_degree[as.numeric(cut(degree(var21),breaks =length(unique(V(var21)$var21_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var21, es=E(var21), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var21))
+maxC <- rep(Inf, vcount(var21))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var21, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var21)$weight)
+
+#PLotting
+plot(var21, 
+     layout=co,
+     #edge.color=V(var21)$color[edge.start],
+     edge.arrow.size=(degree(var21)+1)/1000,
+     edge.width=E(var21)$weight/10,
+     edge.curved = TRUE,
+     vertex.color=V(var21)$vertex_var21_color_degree,
+     vertex.size=log((degree(var21)+2))*10,
+     vertex.size=20,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var21,"LABEL_COR"),
+     vertex.label.cex=log((degree(var21)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var21)$var21_color_degree
+b<-V(var21)$vertex_var21_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Vertex Degree Sized and Red to Blue - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\nMedian Out Degree: %.2f",
+     median(degree(var21, mode="in")), 
+     median(degree(var21, mode="out"))
+   ))
+```
+
+#Network Plotting Centralization - Degree Measures - Using Spectral Color as Distance Measure Representation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+#Get Variable
+V(var21)$var21_color_degree<-V(var21)$var21_centr_degree
+
+#Creating brewer pallette
+vertex_var21_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var21)$var21_color_degree)), "Spectral"))(
+            length(unique(V(var21)$var21_color_degree)))
+
+#Saving as Vertex properties 
+V(var21)$vertex_var21_color_degree<- vertex_var21_color_degree[as.numeric(cut(V(var21)$var21_color_degree,breaks =length(unique(V(var21)$var21_color_degree))))]
+
+#Plotting based only on degree measures 
+edge.start <- ends(var21, es=E(var21), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var21))
+maxC <- rep(Inf, vcount(var21))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var21, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var21)$weight)
+
+#PLotting
+plot(var21, 
+     layout=co,
+     edge.color=V(var21)$vertex_var21_color_degree[edge.start],
+     edge.arrow.size=(degree(var21)+1)/10000,
+     edge.width=E(var21)$weight/10,
+     edge.curved = TRUE,
+     vertex.color=V(var21)$vertex_var21_color_degree,
+     vertex.size=log((V(var21)$var21_centr_degree+2))*10,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var21,"LABEL_COR"),
+     vertex.label.cex=log((degree(var21)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var21)$var21_color_degree
+b<-V(var21)$vertex_var21_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Vertex Centralization Degree Sized Spectral Colored - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\nMedian Out Degree: %.2f",
+     median(degree(var21, mode="in")), 
+     median(degree(var21, mode="out"))
+   ))
+```
+
+#Alternative vizualization using degree in order to genarete sub-graphs - Higher than median degree network
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+# Network elements with lower than meadian degree
+higherthanmedian.network_var21<-V(var21)[degree(var21)<median(degree(var21))] 
+
+#Deleting vertices based in intersection betewenn var21 
+high_var21<-delete.vertices(var21, higherthanmedian.network_var21)
+
+#Plotting based only on degree measures 
+edge.start <- ends(high_var21, es=E(high_var21), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(high_var21))
+maxC <- rep(Inf, vcount(high_var21))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(high_var21, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(high_var21)$weight)
+
+#PLotting
+plot(high_var21, 
+     layout=co,
+     edge.color=V(high_var21)$color[edge.start],
+     edge.arrow.size=(degree(high_var21)+1)/1000,
+     edge.width=E(high_var21)$weight/10,
+     edge.curved = TRUE,
+     vertex.size=log((V(high_var21)$var21_centr_degree+2))*10,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(high_var21,"LABEL_COR"),
+     vertex.label.cex=log((degree(high_var21)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(high_var21)$LABEL_COR
+b<-V(high_var21)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=3,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Higher Than Median Degree - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean In Degree: %.2f\n Mean Out Degree: %.2f",
+     mean(degree(high_var21, mode="in")), 
+     mean(degree(high_var21, mode="out"))
+   )
+  )
+```
+
+#Alternative vizualization using degree in order to genarete sub-graphs - Lower than median degree network 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+# Network elements with lower than meadian degree
+lowerthanmedian.network_var21<-V(var21)[degree(var21)>median(degree(var21))] 
+
+#Deleting vertices based in intersection betewenn var21 
+small_var21<-delete.vertices(var21, lowerthanmedian.network_var21)
+
+#Plotting based only on degree measures 
+edge.start <- ends(small_var21, es=E(small_var21), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(small_var21))
+maxC <- rep(Inf, vcount(small_var21))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(small_var21, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(small_var21)$weight)
+
+#PLotting
+plot(small_var21, 
+     layout=co,
+     edge.color=V(small_var21)$color[edge.start],
+     edge.arrow.size=(degree(small_var21)+1)/1000,
+     edge.width=E(small_var21)$weight/10,
+     edge.curved = TRUE,
+     vertex.size=log((V(small_var21)$var21_centr_degree+2))*20,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(small_var21,"LABEL_COR"),
+     vertex.label.cex=log((degree(small_var21)+2))/3,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(small_var21)$LABEL_COR
+b<-V(small_var21)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Smaller Than Median Degree - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean In Degree: %.2f\nMean Out Degree: %.2f",
+     mean(degree(small_var21, mode="in")), 
+     mean(degree(small_var21, mode="out"))
+   )
+  )
+```
+
+#Plotting using Average Neighbor Degree
+```{r, echo=TRUE}
+#Set Seed
+set.seed(123)
+
+#Plotting based only on degree measures 
+edge.start <- ends(var21_simplified, es=E(var21_simplified), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var21_simplified))
+maxC <- rep(Inf, vcount(var21_simplified))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var21_simplified, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var21_simplified)$weight)
+
+#Plotting based only on degree measures  #var21_simplified_a.nn.deg
+V(var21_simplified)$var21_a.nn.deg<-as.numeric(graph.knn(var21_simplified)$knn)
+V(var21_simplified)$var21_a.nn.deg[V(var21_simplified)$var21_a.nn.deg=="NaN"]<-0
+
+#PLotting
+plot(var21_simplified, 
+     layout=co,
+     edge.color=V(var21_simplified)$color[edge.start],
+     edge.arrow.size=sqrt((V(var21_simplified)$var21_a.nn.deg)^2+1)/1000,
+     edge.width=E(var21_simplified)$weight/100,
+     edge.curved = TRUE,
+     vertex.color=V(var21_simplified)$color,
+     vertex.size=(sqrt((V(var21_simplified)$var21_a.nn.deg)^2))/5,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var21_simplified,"LABEL_COR"),
+     vertex.label.cex=(sqrt((V(var21_simplified)$var21_a.nn.deg)^2)+1)/500,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var21_simplified)$LABEL_COR
+b<-V(var21_simplified)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Average Neighbor Degree Sized - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median Average Neighbor Degree: %.2f",
+     median((var21_a.nn.deg+1))
+   ))
+```
+
+#Plotting using Average Neighbor Degree
+```{r, echo=TRUE}
+#Set Seed
+set.seed(123)
+
+#Plotting based only on degree measures 
+edge.start <- ends(var21_simplified, es=E(var21_simplified), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var21_simplified))
+maxC <- rep(Inf, vcount(var21_simplified))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var21_simplified, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var21_simplified)$weight)
+
+
+#Plotting based only on degree measures  #var21_a.nn.deg
+V(var21_simplified)$var21_a.nn.deg_w<-as.numeric(graph.knn(var21_simplified, weights = E(var21_simplified)$weight)$knn)
+V(var21_simplified)$var21_a.nn.deg_w[V(var21_simplified)$var21_a.nn.deg_w=="NaN"]<-0
+
+#PLotting
+plot(var21_simplified, 
+     layout=co,
+     edge.color=V(var21_simplified)$color[edge.start],
+     edge.arrow.size=sqrt((V(var21_simplified)$var21_a.nn.deg_w)^2+1)/1000,
+     edge.width=E(var21_simplified)$weight/100,
+     edge.curved = TRUE,
+     vertex.color=V(var21_simplified)$color,
+     vertex.size=(sqrt((V(var21_simplified)$var21_a.nn.deg_w)^2))/5,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var21_simplified,"LABEL_COR"),
+     vertex.label.cex=(sqrt((V(var21_simplified)$var21_a.nn.deg_w)^2)+1)/500,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var21_simplified)$LABEL_COR
+b<-V(var21_simplified)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Average Weighted Neighbor Degree Sized - 23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21).", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median Average Weighted Neighbor Degree: %.2f",
+     median((var21_a.nn.deg_w+1))
+   ))
+```
+
+#Circle Degree ***Too intensive computation*** #code
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Circle Degree ***Too intense computation***
+#A_var21 <- get.adjacency(var21, sparse=FALSE)
+#detach("package:igraph", unload=TRUE)
+#library(network)
+#g <- network::as.network.matrix(A_var21)
+#library(sna)
+#gplot.target(g, degree(g), main="Circle Degree")
+#library(igraph)
+```
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/var21_data.RData")
+```
+
+

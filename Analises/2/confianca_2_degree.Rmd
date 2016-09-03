@@ -1,0 +1,1049 @@
+---
+title: "SNA Degrees fuull_no_zero_fancy"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# fuull_no_zero_fancy
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/confianca_data.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+#suppressMessages(library(car))
+#suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+#suppressMessages(library(miniCRAN))
+#suppressMessages(library(magrittr))
+#suppressMessages(library(keyplayer))
+#suppressMessages(library(dplyr))
+#suppressMessages(library(feather))
+#suppressMessages(library(visNetwork))
+#suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#confianca<-simplify(confianca) #Simplify
+```
+
+
+#Centrality Measures
+
+• For undirected graphs:
+
+– Actor centrality - involvement (connections) with other actors
+
+• For directed graphs:
+
+– Actor centrality - source of the ties (outgoing edges)
+
+– Actor prestige - recipient of many ties (incoming edges)
+
+In general - high centrality degree means direct contact with many other actors
+
+##Centrality Degree (number of ties/nearest neighbors).
+
+##Saving in igrpah object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(confianca)$indegree<-degree(confianca, mode = "in") # Actor prestige - recipient of many ties (incoming edges)
+V(confianca)$outdegree <- degree(confianca, mode = "out") # Actor centrality - source of the ties (outgoing edges)
+V(confianca)$totaldegree <- degree(confianca, mode = "total")
+```
+##Saving in Global Environment as an object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_indegree<-degree(confianca, mode = "in")
+confianca_outdegree<-degree(confianca, mode = "out")
+confianca_totaldegree<-degree(confianca, mode = "total")
+```
+
+#Centrality Degree Descriptive Statistics - non-normalized
+
+##Centrality Degree Descriptive Statistics - In
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##in
+summary(confianca_indegree)
+sd(confianca_indegree)
+```  
+##Histogram confianca degree - In
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(confianca, mode = "in", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(confianca)/10, main="Histogram of Indegree Nodes - fuull_no_zero_fancy")
+```  
+
+##Centrality Degree Descriptive Statistics - Out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##out
+summary(confianca_outdegree)
+sd(confianca_outdegree)
+```  
+
+##Histogram confianca degree - Out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(confianca, mode = "out", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(confianca)/10, main="Histogram of Outdegree Nodes - fuull_no_zero_fancy")
+```  
+
+##Centrality Degree Descriptive Statistics - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##all
+summary(confianca_totaldegree)
+sd(confianca_totaldegree)
+```  
+##Histogram confianca degree - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(confianca, mode = "all", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(confianca)/10, main="Histogram of All Degree Nodes - fuull_no_zero_fancy")
+```  
+
+#Compute strength - weighted
+
+A slightly more nuanced metric is “strength centrality”, which is defined as the sum of the weights of all the connections for a given node. This is also sometimes called “weighted degree centrality”
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(confianca)$confianca_strength<- strength(confianca, weights=E(confianca)$weight)
+confianca_strength<- strength(confianca, weights=E(confianca)$weight)
+```
+##Strength Stats
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(confianca_strength)
+sd(confianca_strength)
+```
+##Histogram confianca degree - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(strength(confianca, weights=E(confianca)$weight), ylab="Frequency", xlab="Degree",  breaks=vcount(confianca)/10, main="Histogram of Strength Degree Nodes - fuull_no_zero_fancy")
+```  
+
+#Centrality Degree Normalized
+
+##Centrality Degree Normalized saving igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(confianca)$indegree_n<-degree(confianca, mode = "in", normalized = T)
+V(confianca)$outdegree_n<- degree(confianca, mode = "out", normalized = T)
+V(confianca)$totaldegree_n<- degree(confianca, mode = "total", normalized = T)
+```
+##Saving in Global Environment as an object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_indegree_n<-degree(confianca, mode = "in", normalized = T)
+confianca_outdegree_n<-degree(confianca, mode = "out", normalized = T)
+confianca_totaldegree_n<-degree(confianca, mode = "total", normalized = T)
+```
+##Centrality Degree Normalized Descriptive Statistics - in
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(confianca_indegree_n)
+sd(confianca_indegree_n)
+```
+##Histogram confianca degree normalized - in
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(confianca, mode = "in", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(confianca)/10, main="Histogram of Normalized Indegree Nodes - fuull_no_zero_fancy")
+```
+
+##Centrality Degree Normalized Descriptive Statistics - out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(confianca_outdegree_n)
+sd(confianca_outdegree_n)
+```
+
+##Histogram confianca degree normalized - out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(confianca, mode = "out", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(confianca)/10, main="Histogram of Normalized Outdegree Nodes - fuull_no_zero_fancy")
+```
+
+##Centrality Degree Normalized Descriptive Statistics - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(confianca_totaldegree_n)
+sd(confianca_totaldegree_n)
+```
+
+##Histogram confianca degree normalized - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(confianca, mode = "all", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(confianca)/10, main="Histogram of Normalized All Degree Nodes - fuull_no_zero_fancy")
+```
+
+#Centralization Degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(confianca)$confianca_centr_degree <- centralization.degree(confianca)$res
+confianca_centr_degree <- centralization.degree(confianca)
+```
+
+##Centralization
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_centr_degree$centralization
+```
+##Theoretical Max
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_centr_degree$theoretical_max
+```
+
+#Degree distribution considering total equal one
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_degree.distribution<-degree.distribution(confianca)
+```
+
+##Degree distribution Descriptive Stats
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(confianca_degree.distribution)
+sd(confianca_degree.distribution)
+```
+
+##Histogram confianca distribution degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree.distribution(confianca), breaks=vcount(confianca)/10, ylab="Frequency", xlab="Degree Distribuition", main="Histogram of Degree Distribuition - fuull_no_zero_fancy")
+```
+
+##Degree Probability Distribution
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dd <- degree.distribution(confianca, cumulative=T, mode="all")
+```
+
+##Degree Probability Distribution - Plot Cumulative Frequency
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(dd, pch=19, cex=1, col="orange", xlab="Degree", ylab="Cumulative Frequency", main= "Cumulative Frequency of fuull_no_zero_fancy ")
+```
+
+#Log-Log Degree Distribution - Scale Free Network - Does it fit to power law ?
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dd.confianca <- degree.distribution(confianca)
+d <- 1:max(degree(confianca))-1
+ind <- (dd.confianca != 0)
+```
+
+##Plot Log-Log Degree Distribution
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(d[ind], 
+     dd.confianca[ind], 
+     log="xy", 
+     col="blue",
+     xlab=c("Log-Degree"), 
+     ylab=c("Log-Intensity"),
+     main="Log-Log Degree Distribution For fuull_no_zero_fancy"
+     )
+```
+
+#Average Neighbor Degree versus Vertex Degree (log-log scale for fuull_no_zero_fancy)
+
+The neighborhood of a given order y of a vertex v includes all vertices which are closer to v than the order. Ie. order y=0 is always v itself, order 1 is v plus its immediate neighbors, order 2 is order 1 plus the immediate neighbors of the vertices in order 1, etc.
+
+##Simplify graph first 
+```{r}
+confianca_simplified<-simplify(confianca)
+```
+
+
+##Average Neighbor Degree versus vertex degree (log-log scale for confianca)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_a.nn.deg <- graph.knn(confianca_simplified, weights =E(confianca_simplified)$weight)$knn %>% round(1)
+```
+
+##Saving to igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(confianca_simplified)$confianca_a.nn.deg <- graph.knn(confianca_simplified, weights=E(confianca_simplified)$weight)$knn
+```
+
+##Table Average Neighbor Degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d<-cbind(V(confianca_simplified)$LABEL_COR,confianca_a.nn.deg)
+datatable(d)
+```
+
+##Plotting Average Neighbor Degree versus vertex degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(degree(confianca_simplified), 
+     confianca_a.nn.deg, 
+     log="xy", 
+     col="goldenrod", 
+     xlab=c("Log Vertex Degree"),
+     ylab=c("Log Average Neighbor Degree"),
+     main="Average Neighbor Degree vs Vertex Degree - Log-Log Scale for fuull_no_zero_fancy"
+     )
+```
+
+#Average Weighted Neighbor Degree versus vertex degree (log-log scale for weighted fuull_no_zero_fancy)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_a.nn.deg_w <- graph.knn(confianca_simplified, weights=E(confianca_simplified)$weight)$knn %>% round(1)
+```
+
+##Saving to igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(confianca_simplified)$confianca_a.nn.deg_w <-confianca_a.nn.deg <- graph.knn(confianca_simplified, weights=E(confianca_simplified)$weight)$knn
+```
+
+##Average Weighted Neighbor Descriptive
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(confianca_a.nn.deg_w)
+sd(confianca_a.nn.deg_w, na.rm = T)
+```
+
+##Table Average Neighbor Degree Weighted
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d<-cbind(V(confianca_simplified)$LABEL_COR,confianca_a.nn.deg_w)
+datatable(d)
+```
+
+##Plotting Average Neighbor Degree versus vertex degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(degree(confianca_simplified), 
+     confianca_a.nn.deg, 
+     log="xy", 
+     col="goldenrod", 
+     xlab=c("Log Vertex Degree"),
+     ylab=c("Log Average Neighbor Degree"),
+     main="Average Weighted Neighbor Degree vs Vertex Degree - Log-Log Scale For Weighted fuull_no_zero_fancy"
+     )
+```
+
+#Degree Centralities Dinamic Table
+
+##Getting Degree Measures
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_indegree<-degree(confianca, mode = "in")
+confianca_outdegree<-degree(confianca, mode = "out")
+confianca_totaldegree<-degree(confianca, mode = "total")
+confianca_strength<- strength(confianca, weights=E(confianca)$weight)
+confianca_indegree_n<-degree(confianca, mode = "in", normalized = T) %>% round(3)
+confianca_outdegree_n<-degree(confianca, mode = "out", normalized = T) %>% round(3)
+confianca_totaldegree_n<-degree(confianca, mode = "total", normalized = T) %>% round(3)
+confianca_centr_degree <- centralization.degree(confianca)$res
+confianca_a.nn.deg <- graph.knn(confianca_simplified)$knn %>% round(1)
+confianca_a.nn.deg_w <- graph.knn(confianca_simplified, weights=E(confianca_simplified)$weight)$knn %>% round(1)
+```
+
+##Creating a dataframe of measures
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_df_degree <- data.frame(confianca_indegree,
+confianca_outdegree, 
+confianca_totaldegree,
+confianca_indegree_n, 
+confianca_outdegree_n,
+confianca_totaldegree_n,
+confianca_strength,
+confianca_centr_degree,
+confianca_a.nn.deg,
+confianca_a.nn.deg_w) %>% round(3)
+
+#Adding type
+confianca_df_degree <-cbind(confianca_df_degree, V(confianca)$LABEL_COR)
+
+#Adding names
+names(confianca_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+confianca_df_degree<-confianca_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(confianca_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(confianca_df_degree, by=list(confianca_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(confianca_df_degree, by=list(confianca_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+##Creating a dataframe of measures (Natureza Governamental)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_df_degree <- data.frame(confianca_indegree,
+confianca_outdegree, 
+confianca_totaldegree,
+confianca_indegree_n, 
+confianca_outdegree_n,
+confianca_totaldegree_n,
+confianca_strength,
+confianca_centr_degree,
+confianca_a.nn.deg,
+confianca_a.nn.deg_w) %>% round(3)
+
+#Adding type
+confianca_df_degree <-cbind(confianca_df_degree, V(confianca)$TIPO1)
+
+#Adding names
+names(confianca_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+confianca_df_degree<-confianca_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(confianca_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(confianca_df_degree, by=list(confianca_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(confianca_df_degree, by=list(confianca_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a dataframe of measures (Setores)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+confianca_df_degree <- data.frame(confianca_indegree,
+confianca_outdegree, 
+confianca_totaldegree,
+confianca_indegree_n, 
+confianca_outdegree_n,
+confianca_totaldegree_n,
+confianca_strength,
+confianca_centr_degree,
+confianca_a.nn.deg,
+confianca_a.nn.deg_w) %>% round(3)
+
+#Adding type
+confianca_df_degree <-cbind(confianca_df_degree, V(confianca)$TIPO2)
+
+#Adding names
+names(confianca_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+confianca_df_degree<-confianca_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(confianca_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(confianca_df_degree, by=list(confianca_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(confianca_df_degree, by=list(confianca_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(confianca, es=E(confianca), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(confianca))
+maxC <- rep(Inf, vcount(confianca))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(confianca, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(confianca)$weight)
+
+#PLotting
+plot(confianca, 
+     layout=co,
+     edge.color=V(confianca)$color[edge.start],
+     edge.arrow.size=(degree(confianca)+1)/(30*mean(degree(confianca))),
+     edge.width=E(confianca)$weight/(10*mean(E(confianca)$weight)),
+     edge.curved = TRUE,
+     vertex.size=log((degree(confianca)+2))*(0.5*mean(degree(confianca))),
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(confianca,"LABEL_COR"),
+     vertex.label.cex=log(degree(confianca)+2)/mean(degree(confianca)),
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(confianca)$LABEL_COR
+b<-V(confianca)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Vertex Degree Sized - fuull_no_zero_fancy", sub = "Source: from authors ", cex = .5)
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\n Median Out Degree: %.2f",
+     median(degree(confianca, mode="in")), 
+     median(degree(confianca, mode="out"))
+   ))
+```
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+#Get Variable
+V(confianca)$confianca_color_degree<-V(confianca)$totaldegree %>% round(0)
+
+#Creating brewer pallette
+vertex_confianca_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(confianca)$confianca_color_degree)), "RdBu"))(
+            length(unique(V(confianca)$confianca_color_degree)))
+
+#Saving as Vertex properties 
+V(confianca)$vertex_confianca_color_degree<- vertex_confianca_color_degree[as.numeric(cut(degree(confianca),breaks =length(unique(V(confianca)$confianca_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(confianca, es=E(confianca), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(confianca))
+maxC <- rep(Inf, vcount(confianca))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(confianca, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(confianca)$weight)
+
+#PLotting
+plot(confianca, 
+     layout=co,
+     #edge.color=V(confianca)$color[edge.start],
+     edge.arrow.size=(degree(confianca)+1)/1000,
+     edge.width=E(confianca)$weight/10,
+     edge.curved = TRUE,
+     vertex.color=V(confianca)$vertex_confianca_color_degree,
+     vertex.size=log((degree(confianca)+2))*10,
+     vertex.size=20,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(confianca,"LABEL_COR"),
+     vertex.label.cex=log((degree(confianca)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(confianca)$confianca_color_degree
+b<-V(confianca)$vertex_confianca_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Vertex Degree Sized and Red to Blue - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\nMedian Out Degree: %.2f",
+     median(degree(confianca, mode="in")), 
+     median(degree(confianca, mode="out"))
+   ))
+```
+
+#Network Plotting Centralization - Degree Measures - Using Spectral Color as Distance Measure Representation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+#Get Variable
+V(confianca)$confianca_color_degree<-V(confianca)$confianca_centr_degree
+
+#Creating brewer pallette
+vertex_confianca_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(confianca)$confianca_color_degree)), "Spectral"))(
+            length(unique(V(confianca)$confianca_color_degree)))
+
+#Saving as Vertex properties 
+V(confianca)$vertex_confianca_color_degree<- vertex_confianca_color_degree[as.numeric(cut(V(confianca)$confianca_color_degree,breaks =length(unique(V(confianca)$confianca_color_degree))))]
+
+#Plotting based only on degree measures 
+edge.start <- ends(confianca, es=E(confianca), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(confianca))
+maxC <- rep(Inf, vcount(confianca))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(confianca, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(confianca)$weight)
+
+#PLotting
+plot(confianca, 
+     layout=co,
+     edge.color=V(confianca)$vertex_confianca_color_degree[edge.start],
+     edge.arrow.size=(degree(confianca)+1)/10000,
+     edge.width=E(confianca)$weight/10,
+     edge.curved = TRUE,
+     vertex.color=V(confianca)$vertex_confianca_color_degree,
+     vertex.size=log((V(confianca)$confianca_centr_degree+2))*10,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(confianca,"LABEL_COR"),
+     vertex.label.cex=log((degree(confianca)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(confianca)$confianca_color_degree
+b<-V(confianca)$vertex_confianca_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Vertex Centralization Degree Sized Spectral Colored - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\nMedian Out Degree: %.2f",
+     median(degree(confianca, mode="in")), 
+     median(degree(confianca, mode="out"))
+   ))
+```
+
+#Alternative vizualization using degree in order to genarete sub-graphs - Higher than median degree network
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+# Network elements with lower than meadian degree
+higherthanmedian.network_confianca<-V(confianca)[degree(confianca)<median(degree(confianca))] 
+
+#Deleting vertices based in intersection betewenn confianca 
+high_confianca<-delete.vertices(confianca, higherthanmedian.network_confianca)
+
+#Plotting based only on degree measures 
+edge.start <- ends(high_confianca, es=E(high_confianca), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(high_confianca))
+maxC <- rep(Inf, vcount(high_confianca))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(high_confianca, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(high_confianca)$weight)
+
+#PLotting
+plot(high_confianca, 
+     layout=co,
+     edge.color=V(high_confianca)$color[edge.start],
+     edge.arrow.size=(degree(high_confianca)+1)/1000,
+     edge.width=E(high_confianca)$weight/10,
+     edge.curved = TRUE,
+     vertex.size=log((V(high_confianca)$confianca_centr_degree+2))*10,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(high_confianca,"LABEL_COR"),
+     vertex.label.cex=log((degree(high_confianca)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(high_confianca)$LABEL_COR
+b<-V(high_confianca)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=3,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Higher Than Median Degree - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean In Degree: %.2f\n Mean Out Degree: %.2f",
+     mean(degree(high_confianca, mode="in")), 
+     mean(degree(high_confianca, mode="out"))
+   )
+  )
+```
+
+#Alternative vizualization using degree in order to genarete sub-graphs - Lower than median degree network 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+# Network elements with lower than meadian degree
+lowerthanmedian.network_confianca<-V(confianca)[degree(confianca)>median(degree(confianca))] 
+
+#Deleting vertices based in intersection betewenn confianca 
+small_confianca<-delete.vertices(confianca, lowerthanmedian.network_confianca)
+
+#Plotting based only on degree measures 
+edge.start <- ends(small_confianca, es=E(small_confianca), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(small_confianca))
+maxC <- rep(Inf, vcount(small_confianca))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(small_confianca, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(small_confianca)$weight)
+
+#PLotting
+plot(small_confianca, 
+     layout=co,
+     edge.color=V(small_confianca)$color[edge.start],
+     edge.arrow.size=(degree(small_confianca)+1)/1000,
+     edge.width=E(small_confianca)$weight/10,
+     edge.curved = TRUE,
+     vertex.size=log((V(small_confianca)$confianca_centr_degree+2))*20,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(small_confianca,"LABEL_COR"),
+     vertex.label.cex=log((degree(small_confianca)+2))/3,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(small_confianca)$LABEL_COR
+b<-V(small_confianca)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Smaller Than Median Degree - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean In Degree: %.2f\nMean Out Degree: %.2f",
+     mean(degree(small_confianca, mode="in")), 
+     mean(degree(small_confianca, mode="out"))
+   )
+  )
+```
+
+#Plotting using Average Neighbor Degree
+```{r, echo=TRUE}
+#Set Seed
+set.seed(123)
+
+#Plotting based only on degree measures 
+edge.start <- ends(confianca_simplified, es=E(confianca_simplified), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(confianca_simplified))
+maxC <- rep(Inf, vcount(confianca_simplified))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(confianca_simplified, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(confianca_simplified)$weight)
+
+#Plotting based only on degree measures  #confianca_simplified_a.nn.deg
+V(confianca_simplified)$confianca_a.nn.deg<-as.numeric(graph.knn(confianca_simplified)$knn)
+V(confianca_simplified)$confianca_a.nn.deg[V(confianca_simplified)$confianca_a.nn.deg=="NaN"]<-0
+
+#PLotting
+plot(confianca_simplified, 
+     layout=co,
+     edge.color=V(confianca_simplified)$color[edge.start],
+     edge.arrow.size=sqrt((V(confianca_simplified)$confianca_a.nn.deg)^2+1)/1000,
+     edge.width=E(confianca_simplified)$weight/100,
+     edge.curved = TRUE,
+     vertex.color=V(confianca_simplified)$color,
+     vertex.size=(sqrt((V(confianca_simplified)$confianca_a.nn.deg)^2))/5,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(confianca_simplified,"LABEL_COR"),
+     vertex.label.cex=(sqrt((V(confianca_simplified)$confianca_a.nn.deg)^2)+1)/500,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(confianca_simplified)$LABEL_COR
+b<-V(confianca_simplified)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Average Neighbor Degree Sized - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median Average Neighbor Degree: %.2f",
+     median((confianca_a.nn.deg+1))
+   ))
+```
+
+#Plotting using Average Neighbor Degree
+```{r, echo=TRUE}
+#Set Seed
+set.seed(123)
+
+#Plotting based only on degree measures 
+edge.start <- ends(confianca_simplified, es=E(confianca_simplified), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(confianca_simplified))
+maxC <- rep(Inf, vcount(confianca_simplified))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(confianca_simplified, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(confianca_simplified)$weight)
+
+
+#Plotting based only on degree measures  #confianca_a.nn.deg
+V(confianca_simplified)$confianca_a.nn.deg_w<-as.numeric(graph.knn(confianca_simplified, weights = E(confianca_simplified)$weight)$knn)
+V(confianca_simplified)$confianca_a.nn.deg_w[V(confianca_simplified)$confianca_a.nn.deg_w=="NaN"]<-0
+
+#PLotting
+plot(confianca_simplified, 
+     layout=co,
+     edge.color=V(confianca_simplified)$color[edge.start],
+     edge.arrow.size=sqrt((V(confianca_simplified)$confianca_a.nn.deg_w)^2+1)/1000,
+     edge.width=E(confianca_simplified)$weight/100,
+     edge.curved = TRUE,
+     vertex.color=V(confianca_simplified)$color,
+     vertex.size=(sqrt((V(confianca_simplified)$confianca_a.nn.deg_w)^2))/5,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(confianca_simplified,"LABEL_COR"),
+     vertex.label.cex=(sqrt((V(confianca_simplified)$confianca_a.nn.deg_w)^2)+1)/500,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(confianca_simplified)$LABEL_COR
+b<-V(confianca_simplified)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Average Weighted Neighbor Degree Sized - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median Average Weighted Neighbor Degree: %.2f",
+     median((confianca_a.nn.deg_w+1))
+   ))
+```
+
+#Circle Degree ***Too intensive computation*** #code
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Circle Degree ***Too intense computation***
+#A_confianca <- get.adjacency(confianca, sparse=FALSE)
+#detach("package:igraph", unload=TRUE)
+#library(network)
+#g <- network::as.network.matrix(A_confianca)
+#library(sna)
+#gplot.target(g, degree(g), main="Circle Degree")
+#library(igraph)
+```
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/confianca_data.RData")
+```
+
+

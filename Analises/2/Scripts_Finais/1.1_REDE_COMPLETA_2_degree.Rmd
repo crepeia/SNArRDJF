@@ -1,0 +1,1049 @@
+---
+title: "SNA Degrees 1.1 - REDE COMPLETA (full_no_zero)"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 1.1 - REDE COMPLETA (full_no_zero)
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/full_no_zero_data.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+#suppressMessages(library(car))
+#suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+#suppressMessages(library(miniCRAN))
+#suppressMessages(library(magrittr))
+#suppressMessages(library(keyplayer))
+#suppressMessages(library(dplyr))
+#suppressMessages(library(feather))
+#suppressMessages(library(visNetwork))
+#suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#full_no_zero<-simplify(full_no_zero) #Simplify
+```
+
+
+#Centrality Measures
+
+• For undirected graphs:
+
+– Actor centrality - involvement (connections) with other actors
+
+• For directed graphs:
+
+– Actor centrality - source of the ties (outgoing edges)
+
+– Actor prestige - recipient of many ties (incoming edges)
+
+In general - high centrality degree means direct contact with many other actors
+
+##Centrality Degree (number of ties/nearest neighbors).
+
+##Saving in igrpah object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(full_no_zero)$indegree<-degree(full_no_zero, mode = "in") # Actor prestige - recipient of many ties (incoming edges)
+V(full_no_zero)$outdegree <- degree(full_no_zero, mode = "out") # Actor centrality - source of the ties (outgoing edges)
+V(full_no_zero)$totaldegree <- degree(full_no_zero, mode = "total")
+```
+##Saving in Global Environment as an object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_indegree<-degree(full_no_zero, mode = "in")
+full_no_zero_outdegree<-degree(full_no_zero, mode = "out")
+full_no_zero_totaldegree<-degree(full_no_zero, mode = "total")
+```
+
+#Centrality Degree Descriptive Statistics - non-normalized
+
+##Centrality Degree Descriptive Statistics - In
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##in
+summary(full_no_zero_indegree)
+sd(full_no_zero_indegree)
+```  
+##Histogram full_no_zero degree - In
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(full_no_zero, mode = "in", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(full_no_zero)/10, main="Histogram of Indegree Nodes - 1.1 - REDE COMPLETA (full_no_zero)")
+```  
+
+##Centrality Degree Descriptive Statistics - Out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##out
+summary(full_no_zero_outdegree)
+sd(full_no_zero_outdegree)
+```  
+
+##Histogram full_no_zero degree - Out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(full_no_zero, mode = "out", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(full_no_zero)/10, main="Histogram of Outdegree Nodes - 1.1 - REDE COMPLETA (full_no_zero)")
+```  
+
+##Centrality Degree Descriptive Statistics - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##all
+summary(full_no_zero_totaldegree)
+sd(full_no_zero_totaldegree)
+```  
+##Histogram full_no_zero degree - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(full_no_zero, mode = "all", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(full_no_zero)/10, main="Histogram of All Degree Nodes - 1.1 - REDE COMPLETA (full_no_zero)")
+```  
+
+#Compute strength - weighted
+
+A slightly more nuanced metric is “strength centrality”, which is defined as the sum of the weights of all the connections for a given node. This is also sometimes called “weighted degree centrality”
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(full_no_zero)$full_no_zero_strength<- strength(full_no_zero, weights=E(full_no_zero)$weight)
+full_no_zero_strength<- strength(full_no_zero, weights=E(full_no_zero)$weight)
+```
+##Strength Stats
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(full_no_zero_strength)
+sd(full_no_zero_strength)
+```
+##Histogram full_no_zero degree - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(strength(full_no_zero, weights=E(full_no_zero)$weight), ylab="Frequency", xlab="Degree",  breaks=vcount(full_no_zero)/10, main="Histogram of Strength Degree Nodes - 1.1 - REDE COMPLETA (full_no_zero)")
+```  
+
+#Centrality Degree Normalized
+
+##Centrality Degree Normalized saving igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(full_no_zero)$indegree_n<-degree(full_no_zero, mode = "in", normalized = T)
+V(full_no_zero)$outdegree_n<- degree(full_no_zero, mode = "out", normalized = T)
+V(full_no_zero)$totaldegree_n<- degree(full_no_zero, mode = "total", normalized = T)
+```
+##Saving in Global Environment as an object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_indegree_n<-degree(full_no_zero, mode = "in", normalized = T)
+full_no_zero_outdegree_n<-degree(full_no_zero, mode = "out", normalized = T)
+full_no_zero_totaldegree_n<-degree(full_no_zero, mode = "total", normalized = T)
+```
+##Centrality Degree Normalized Descriptive Statistics - in
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(full_no_zero_indegree_n)
+sd(full_no_zero_indegree_n)
+```
+##Histogram full_no_zero degree normalized - in
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(full_no_zero, mode = "in", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(full_no_zero)/10, main="Histogram of Normalized Indegree Nodes - 1.1 - REDE COMPLETA (full_no_zero)")
+```
+
+##Centrality Degree Normalized Descriptive Statistics - out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(full_no_zero_outdegree_n)
+sd(full_no_zero_outdegree_n)
+```
+
+##Histogram full_no_zero degree normalized - out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(full_no_zero, mode = "out", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(full_no_zero)/10, main="Histogram of Normalized Outdegree Nodes - 1.1 - REDE COMPLETA (full_no_zero)")
+```
+
+##Centrality Degree Normalized Descriptive Statistics - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(full_no_zero_totaldegree_n)
+sd(full_no_zero_totaldegree_n)
+```
+
+##Histogram full_no_zero degree normalized - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(full_no_zero, mode = "all", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(full_no_zero)/10, main="Histogram of Normalized All Degree Nodes - 1.1 - REDE COMPLETA (full_no_zero)")
+```
+
+#Centralization Degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(full_no_zero)$full_no_zero_centr_degree <- centralization.degree(full_no_zero)$res
+full_no_zero_centr_degree <- centralization.degree(full_no_zero)
+```
+
+##Centralization
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_centr_degree$centralization
+```
+##Theoretical Max
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_centr_degree$theoretical_max
+```
+
+#Degree distribution considering total equal one
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_degree.distribution<-degree.distribution(full_no_zero)
+```
+
+##Degree distribution Descriptive Stats
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(full_no_zero_degree.distribution)
+sd(full_no_zero_degree.distribution)
+```
+
+##Histogram full_no_zero distribution degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree.distribution(full_no_zero), breaks=vcount(full_no_zero)/10, ylab="Frequency", xlab="Degree Distribuition", main="Histogram of Degree Distribuition - 1.1 - REDE COMPLETA (full_no_zero)")
+```
+
+##Degree Probability Distribution
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dd <- degree.distribution(full_no_zero, cumulative=T, mode="all")
+```
+
+##Degree Probability Distribution - Plot Cumulative Frequency
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(dd, pch=19, cex=1, col="orange", xlab="Degree", ylab="Cumulative Frequency", main= "Cumulative Frequency of 1.1 - REDE COMPLETA (full_no_zero) ")
+```
+
+#Log-Log Degree Distribution - Scale Free Network - Does it fit to power law ?
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dd.full_no_zero <- degree.distribution(full_no_zero)
+d <- 1:max(degree(full_no_zero))-1
+ind <- (dd.full_no_zero != 0)
+```
+
+##Plot Log-Log Degree Distribution
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(d[ind], 
+     dd.full_no_zero[ind], 
+     log="xy", 
+     col="blue",
+     xlab=c("Log-Degree"), 
+     ylab=c("Log-Intensity"),
+     main="Log-Log Degree Distribution For 1.1 - REDE COMPLETA (full_no_zero)"
+     )
+```
+
+#Average Neighbor Degree versus Vertex Degree (log-log scale for 1.1 - REDE COMPLETA (full_no_zero))
+
+The neighborhood of a given order y of a vertex v includes all vertices which are closer to v than the order. Ie. order y=0 is always v itself, order 1 is v plus its immediate neighbors, order 2 is order 1 plus the immediate neighbors of the vertices in order 1, etc.
+
+##Simplify graph first 
+```{r}
+full_no_zero_simplified<-simplify(full_no_zero)
+```
+
+
+##Average Neighbor Degree versus vertex degree (log-log scale for full_no_zero)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_a.nn.deg <- graph.knn(full_no_zero_simplified, weights =E(full_no_zero_simplified)$weight)$knn %>% round(1)
+```
+
+##Saving to igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(full_no_zero_simplified)$full_no_zero_a.nn.deg <- graph.knn(full_no_zero_simplified, weights=E(full_no_zero_simplified)$weight)$knn
+```
+
+##Table Average Neighbor Degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d<-cbind(V(full_no_zero_simplified)$LABEL_COR,full_no_zero_a.nn.deg)
+datatable(d)
+```
+
+##Plotting Average Neighbor Degree versus vertex degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(degree(full_no_zero_simplified), 
+     full_no_zero_a.nn.deg, 
+     log="xy", 
+     col="goldenrod", 
+     xlab=c("Log Vertex Degree"),
+     ylab=c("Log Average Neighbor Degree"),
+     main="Average Neighbor Degree vs Vertex Degree - Log-Log Scale for 1.1 - REDE COMPLETA (full_no_zero)"
+     )
+```
+
+#Average Weighted Neighbor Degree versus vertex degree (log-log scale for weighted 1.1 - REDE COMPLETA (full_no_zero))
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_a.nn.deg_w <- graph.knn(full_no_zero_simplified, weights=E(full_no_zero_simplified)$weight)$knn %>% round(1)
+```
+
+##Saving to igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(full_no_zero_simplified)$full_no_zero_a.nn.deg_w <-full_no_zero_a.nn.deg <- graph.knn(full_no_zero_simplified, weights=E(full_no_zero_simplified)$weight)$knn
+```
+
+##Average Weighted Neighbor Descriptive
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(full_no_zero_a.nn.deg_w)
+sd(full_no_zero_a.nn.deg_w, na.rm = T)
+```
+
+##Table Average Neighbor Degree Weighted
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d<-cbind(V(full_no_zero_simplified)$LABEL_COR,full_no_zero_a.nn.deg_w)
+datatable(d)
+```
+
+##Plotting Average Neighbor Degree versus vertex degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(degree(full_no_zero_simplified), 
+     full_no_zero_a.nn.deg, 
+     log="xy", 
+     col="goldenrod", 
+     xlab=c("Log Vertex Degree"),
+     ylab=c("Log Average Neighbor Degree"),
+     main="Average Weighted Neighbor Degree vs Vertex Degree - Log-Log Scale For Weighted 1.1 - REDE COMPLETA (full_no_zero)"
+     )
+```
+
+#Degree Centralities Dinamic Table
+
+##Getting Degree Measures
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_indegree<-degree(full_no_zero, mode = "in")
+full_no_zero_outdegree<-degree(full_no_zero, mode = "out")
+full_no_zero_totaldegree<-degree(full_no_zero, mode = "total")
+full_no_zero_strength<- strength(full_no_zero, weights=E(full_no_zero)$weight)
+full_no_zero_indegree_n<-degree(full_no_zero, mode = "in", normalized = T) %>% round(3)
+full_no_zero_outdegree_n<-degree(full_no_zero, mode = "out", normalized = T) %>% round(3)
+full_no_zero_totaldegree_n<-degree(full_no_zero, mode = "total", normalized = T) %>% round(3)
+full_no_zero_centr_degree <- centralization.degree(full_no_zero)$res
+full_no_zero_a.nn.deg <- graph.knn(full_no_zero_simplified)$knn %>% round(1)
+full_no_zero_a.nn.deg_w <- graph.knn(full_no_zero_simplified, weights=E(full_no_zero_simplified)$weight)$knn %>% round(1)
+```
+
+##Creating a dataframe of measures
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_df_degree <- data.frame(full_no_zero_indegree,
+full_no_zero_outdegree, 
+full_no_zero_totaldegree,
+full_no_zero_indegree_n, 
+full_no_zero_outdegree_n,
+full_no_zero_totaldegree_n,
+full_no_zero_strength,
+full_no_zero_centr_degree,
+full_no_zero_a.nn.deg,
+full_no_zero_a.nn.deg_w) %>% round(3)
+
+#Adding type
+full_no_zero_df_degree <-cbind(full_no_zero_df_degree, V(full_no_zero)$LABEL_COR)
+
+#Adding names
+names(full_no_zero_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+full_no_zero_df_degree<-full_no_zero_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(full_no_zero_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(full_no_zero_df_degree, by=list(full_no_zero_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(full_no_zero_df_degree, by=list(full_no_zero_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+##Creating a dataframe of measures (Natureza Governamental)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_df_degree <- data.frame(full_no_zero_indegree,
+full_no_zero_outdegree, 
+full_no_zero_totaldegree,
+full_no_zero_indegree_n, 
+full_no_zero_outdegree_n,
+full_no_zero_totaldegree_n,
+full_no_zero_strength,
+full_no_zero_centr_degree,
+full_no_zero_a.nn.deg,
+full_no_zero_a.nn.deg_w) %>% round(3)
+
+#Adding type
+full_no_zero_df_degree <-cbind(full_no_zero_df_degree, V(full_no_zero)$TIPO1)
+
+#Adding names
+names(full_no_zero_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+full_no_zero_df_degree<-full_no_zero_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(full_no_zero_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(full_no_zero_df_degree, by=list(full_no_zero_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(full_no_zero_df_degree, by=list(full_no_zero_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a dataframe of measures (Setores)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+full_no_zero_df_degree <- data.frame(full_no_zero_indegree,
+full_no_zero_outdegree, 
+full_no_zero_totaldegree,
+full_no_zero_indegree_n, 
+full_no_zero_outdegree_n,
+full_no_zero_totaldegree_n,
+full_no_zero_strength,
+full_no_zero_centr_degree,
+full_no_zero_a.nn.deg,
+full_no_zero_a.nn.deg_w) %>% round(3)
+
+#Adding type
+full_no_zero_df_degree <-cbind(full_no_zero_df_degree, V(full_no_zero)$TIPO2)
+
+#Adding names
+names(full_no_zero_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+full_no_zero_df_degree<-full_no_zero_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(full_no_zero_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(full_no_zero_df_degree, by=list(full_no_zero_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(full_no_zero_df_degree, by=list(full_no_zero_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(full_no_zero, es=E(full_no_zero), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(full_no_zero))
+maxC <- rep(Inf, vcount(full_no_zero))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(full_no_zero, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(full_no_zero)$weight)
+
+#PLotting
+plot(full_no_zero, 
+     layout=co,
+     edge.color=V(full_no_zero)$color[edge.start],
+     edge.arrow.size=(degree(full_no_zero)+1)/(30*mean(degree(full_no_zero))),
+     edge.width=E(full_no_zero)$weight/(10*mean(E(full_no_zero)$weight)),
+     edge.curved = TRUE,
+     vertex.size=log((degree(full_no_zero)+2))*(0.5*mean(degree(full_no_zero))),
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(full_no_zero,"LABEL_COR"),
+     vertex.label.cex=log(degree(full_no_zero)+2)/mean(degree(full_no_zero)),
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(full_no_zero)$LABEL_COR
+b<-V(full_no_zero)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Vertex Degree Sized - 1.1 - REDE COMPLETA (full_no_zero)", sub = "Source: from authors ", cex = .5)
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\n Median Out Degree: %.2f",
+     median(degree(full_no_zero, mode="in")), 
+     median(degree(full_no_zero, mode="out"))
+   ))
+```
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+#Get Variable
+V(full_no_zero)$full_no_zero_color_degree<-V(full_no_zero)$totaldegree %>% round(0)
+
+#Creating brewer pallette
+vertex_full_no_zero_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(full_no_zero)$full_no_zero_color_degree)), "RdBu"))(
+            length(unique(V(full_no_zero)$full_no_zero_color_degree)))
+
+#Saving as Vertex properties 
+V(full_no_zero)$vertex_full_no_zero_color_degree<- vertex_full_no_zero_color_degree[as.numeric(cut(degree(full_no_zero),breaks =length(unique(V(full_no_zero)$full_no_zero_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(full_no_zero, es=E(full_no_zero), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(full_no_zero))
+maxC <- rep(Inf, vcount(full_no_zero))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(full_no_zero, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(full_no_zero)$weight)
+
+#PLotting
+plot(full_no_zero, 
+     layout=co,
+     #edge.color=V(full_no_zero)$color[edge.start],
+     edge.arrow.size=(degree(full_no_zero)+1)/1000,
+     edge.width=E(full_no_zero)$weight/10,
+     edge.curved = TRUE,
+     vertex.color=V(full_no_zero)$vertex_full_no_zero_color_degree,
+     vertex.size=log((degree(full_no_zero)+2))*10,
+     vertex.size=20,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(full_no_zero,"LABEL_COR"),
+     vertex.label.cex=log((degree(full_no_zero)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(full_no_zero)$full_no_zero_color_degree
+b<-V(full_no_zero)$vertex_full_no_zero_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Vertex Degree Sized and Red to Blue - 1.1 - REDE COMPLETA (full_no_zero)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\nMedian Out Degree: %.2f",
+     median(degree(full_no_zero, mode="in")), 
+     median(degree(full_no_zero, mode="out"))
+   ))
+```
+
+#Network Plotting Centralization - Degree Measures - Using Spectral Color as Distance Measure Representation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+#Get Variable
+V(full_no_zero)$full_no_zero_color_degree<-V(full_no_zero)$full_no_zero_centr_degree
+
+#Creating brewer pallette
+vertex_full_no_zero_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(full_no_zero)$full_no_zero_color_degree)), "Spectral"))(
+            length(unique(V(full_no_zero)$full_no_zero_color_degree)))
+
+#Saving as Vertex properties 
+V(full_no_zero)$vertex_full_no_zero_color_degree<- vertex_full_no_zero_color_degree[as.numeric(cut(V(full_no_zero)$full_no_zero_color_degree,breaks =length(unique(V(full_no_zero)$full_no_zero_color_degree))))]
+
+#Plotting based only on degree measures 
+edge.start <- ends(full_no_zero, es=E(full_no_zero), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(full_no_zero))
+maxC <- rep(Inf, vcount(full_no_zero))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(full_no_zero, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(full_no_zero)$weight)
+
+#PLotting
+plot(full_no_zero, 
+     layout=co,
+     edge.color=V(full_no_zero)$vertex_full_no_zero_color_degree[edge.start],
+     edge.arrow.size=(degree(full_no_zero)+1)/10000,
+     edge.width=E(full_no_zero)$weight/10,
+     edge.curved = TRUE,
+     vertex.color=V(full_no_zero)$vertex_full_no_zero_color_degree,
+     vertex.size=log((V(full_no_zero)$full_no_zero_centr_degree+2))*10,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(full_no_zero,"LABEL_COR"),
+     vertex.label.cex=log((degree(full_no_zero)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(full_no_zero)$full_no_zero_color_degree
+b<-V(full_no_zero)$vertex_full_no_zero_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Vertex Centralization Degree Sized Spectral Colored - 1.1 - REDE COMPLETA (full_no_zero)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\nMedian Out Degree: %.2f",
+     median(degree(full_no_zero, mode="in")), 
+     median(degree(full_no_zero, mode="out"))
+   ))
+```
+
+#Alternative vizualization using degree in order to genarete sub-graphs - Higher than median degree network
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+# Network elements with lower than meadian degree
+higherthanmedian.network_full_no_zero<-V(full_no_zero)[degree(full_no_zero)<median(degree(full_no_zero))] 
+
+#Deleting vertices based in intersection betewenn full_no_zero 
+high_full_no_zero<-delete.vertices(full_no_zero, higherthanmedian.network_full_no_zero)
+
+#Plotting based only on degree measures 
+edge.start <- ends(high_full_no_zero, es=E(high_full_no_zero), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(high_full_no_zero))
+maxC <- rep(Inf, vcount(high_full_no_zero))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(high_full_no_zero, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(high_full_no_zero)$weight)
+
+#PLotting
+plot(high_full_no_zero, 
+     layout=co,
+     edge.color=V(high_full_no_zero)$color[edge.start],
+     edge.arrow.size=(degree(high_full_no_zero)+1)/1000,
+     edge.width=E(high_full_no_zero)$weight/10,
+     edge.curved = TRUE,
+     vertex.size=log((V(high_full_no_zero)$full_no_zero_centr_degree+2))*10,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(high_full_no_zero,"LABEL_COR"),
+     vertex.label.cex=log((degree(high_full_no_zero)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(high_full_no_zero)$LABEL_COR
+b<-V(high_full_no_zero)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=3,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Higher Than Median Degree - 1.1 - REDE COMPLETA (full_no_zero)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean In Degree: %.2f\n Mean Out Degree: %.2f",
+     mean(degree(high_full_no_zero, mode="in")), 
+     mean(degree(high_full_no_zero, mode="out"))
+   )
+  )
+```
+
+#Alternative vizualization using degree in order to genarete sub-graphs - Lower than median degree network 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+# Network elements with lower than meadian degree
+lowerthanmedian.network_full_no_zero<-V(full_no_zero)[degree(full_no_zero)>median(degree(full_no_zero))] 
+
+#Deleting vertices based in intersection betewenn full_no_zero 
+small_full_no_zero<-delete.vertices(full_no_zero, lowerthanmedian.network_full_no_zero)
+
+#Plotting based only on degree measures 
+edge.start <- ends(small_full_no_zero, es=E(small_full_no_zero), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(small_full_no_zero))
+maxC <- rep(Inf, vcount(small_full_no_zero))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(small_full_no_zero, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(small_full_no_zero)$weight)
+
+#PLotting
+plot(small_full_no_zero, 
+     layout=co,
+     edge.color=V(small_full_no_zero)$color[edge.start],
+     edge.arrow.size=(degree(small_full_no_zero)+1)/1000,
+     edge.width=E(small_full_no_zero)$weight/10,
+     edge.curved = TRUE,
+     vertex.size=log((V(small_full_no_zero)$full_no_zero_centr_degree+2))*20,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(small_full_no_zero,"LABEL_COR"),
+     vertex.label.cex=log((degree(small_full_no_zero)+2))/3,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(small_full_no_zero)$LABEL_COR
+b<-V(small_full_no_zero)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Smaller Than Median Degree - 1.1 - REDE COMPLETA (full_no_zero)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean In Degree: %.2f\nMean Out Degree: %.2f",
+     mean(degree(small_full_no_zero, mode="in")), 
+     mean(degree(small_full_no_zero, mode="out"))
+   )
+  )
+```
+
+#Plotting using Average Neighbor Degree
+```{r, echo=TRUE}
+#Set Seed
+set.seed(123)
+
+#Plotting based only on degree measures 
+edge.start <- ends(full_no_zero_simplified, es=E(full_no_zero_simplified), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(full_no_zero_simplified))
+maxC <- rep(Inf, vcount(full_no_zero_simplified))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(full_no_zero_simplified, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(full_no_zero_simplified)$weight)
+
+#Plotting based only on degree measures  #full_no_zero_simplified_a.nn.deg
+V(full_no_zero_simplified)$full_no_zero_a.nn.deg<-as.numeric(graph.knn(full_no_zero_simplified)$knn)
+V(full_no_zero_simplified)$full_no_zero_a.nn.deg[V(full_no_zero_simplified)$full_no_zero_a.nn.deg=="NaN"]<-0
+
+#PLotting
+plot(full_no_zero_simplified, 
+     layout=co,
+     edge.color=V(full_no_zero_simplified)$color[edge.start],
+     edge.arrow.size=sqrt((V(full_no_zero_simplified)$full_no_zero_a.nn.deg)^2+1)/1000,
+     edge.width=E(full_no_zero_simplified)$weight/100,
+     edge.curved = TRUE,
+     vertex.color=V(full_no_zero_simplified)$color,
+     vertex.size=(sqrt((V(full_no_zero_simplified)$full_no_zero_a.nn.deg)^2))/5,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(full_no_zero_simplified,"LABEL_COR"),
+     vertex.label.cex=(sqrt((V(full_no_zero_simplified)$full_no_zero_a.nn.deg)^2)+1)/500,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(full_no_zero_simplified)$LABEL_COR
+b<-V(full_no_zero_simplified)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Average Neighbor Degree Sized - 1.1 - REDE COMPLETA (full_no_zero)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median Average Neighbor Degree: %.2f",
+     median((full_no_zero_a.nn.deg+1))
+   ))
+```
+
+#Plotting using Average Neighbor Degree
+```{r, echo=TRUE}
+#Set Seed
+set.seed(123)
+
+#Plotting based only on degree measures 
+edge.start <- ends(full_no_zero_simplified, es=E(full_no_zero_simplified), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(full_no_zero_simplified))
+maxC <- rep(Inf, vcount(full_no_zero_simplified))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(full_no_zero_simplified, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(full_no_zero_simplified)$weight)
+
+
+#Plotting based only on degree measures  #full_no_zero_a.nn.deg
+V(full_no_zero_simplified)$full_no_zero_a.nn.deg_w<-as.numeric(graph.knn(full_no_zero_simplified, weights = E(full_no_zero_simplified)$weight)$knn)
+V(full_no_zero_simplified)$full_no_zero_a.nn.deg_w[V(full_no_zero_simplified)$full_no_zero_a.nn.deg_w=="NaN"]<-0
+
+#PLotting
+plot(full_no_zero_simplified, 
+     layout=co,
+     edge.color=V(full_no_zero_simplified)$color[edge.start],
+     edge.arrow.size=sqrt((V(full_no_zero_simplified)$full_no_zero_a.nn.deg_w)^2+1)/1000,
+     edge.width=E(full_no_zero_simplified)$weight/100,
+     edge.curved = TRUE,
+     vertex.color=V(full_no_zero_simplified)$color,
+     vertex.size=(sqrt((V(full_no_zero_simplified)$full_no_zero_a.nn.deg_w)^2))/5,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(full_no_zero_simplified,"LABEL_COR"),
+     vertex.label.cex=(sqrt((V(full_no_zero_simplified)$full_no_zero_a.nn.deg_w)^2)+1)/500,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(full_no_zero_simplified)$LABEL_COR
+b<-V(full_no_zero_simplified)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Average Weighted Neighbor Degree Sized - 1.1 - REDE COMPLETA (full_no_zero)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median Average Weighted Neighbor Degree: %.2f",
+     median((full_no_zero_a.nn.deg_w+1))
+   ))
+```
+
+#Circle Degree ***Too intensive computation*** #code
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Circle Degree ***Too intense computation***
+#A_full_no_zero <- get.adjacency(full_no_zero, sparse=FALSE)
+#detach("package:igraph", unload=TRUE)
+#library(network)
+#g <- network::as.network.matrix(A_full_no_zero)
+#library(sna)
+#gplot.target(g, degree(g), main="Circle Degree")
+#library(igraph)
+```
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/full_no_zero_data.RData")
+```
+
+

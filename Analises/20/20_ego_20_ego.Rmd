@@ -1,0 +1,317 @@
+---
+title: "SNA HITS fuull_no_zero_fancy"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# fuull_no_zero_fancy
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/6_bonacichs_full_no_zero.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+suppressMessages(library(car))
+suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+suppressMessages(library(miniCRAN))
+suppressMessages(library(magrittr))
+suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+suppressMessages(library(feather))
+suppressMessages(library(visNetwork))
+suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#full_no_zero<-simplify(full_no_zero) #Simplify
+```
+
+
+
+#Ego Network CAPSAD - Example considering its high page rank - All connections
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Making igrpah ego object
+make_ego_graph_all_full_no_zero<-make_ego_graph(full_no_zero, order=1, V(full_no_zero)[V2_LABEL_ID=="q170_CAPS...CAPS.AD"], mode ="all", mindist = 0)[[1]]
+
+#Plotting ego based on Page Rank 
+plot(make_ego_graph_all_full_no_zero, 
+     layout=layout.kamada.kawai(make_ego_graph_all_full_no_zero), 
+     vertex.label=get.vertex.attribute(make_ego_graph_all_full_no_zero,"LABEL_COR"),
+     vertex.size=30*sqrt(page.rank(make_ego_graph_all_full_no_zero)$vector),
+     edge.arrow.size=0.1,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label.cex=log(degree(make_ego_graph_all_full_no_zero)+1)/10,
+     edge.width=log(edge.betweenness(make_ego_graph_all_full_no_zero))/100,
+     edge.curved = TRUE)
+
+#Solving Problems with legend rendering 
+a<-V(make_ego_graph_all_full_no_zero)$LABEL_COR
+b<-V(make_ego_graph_all_full_no_zero)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=1, y=1.25,
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .8)
+
+#Adding Title
+  title("Ego Network Page Rank Sized - All connections from CAPSAD - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x = -1, y = -1.2, labels = 
+   sprintf("Mean Page Rank Scores: %.2f\n SD Page Rank Scores: %.2f",
+     mean(page.rank(make_ego_graph_all_full_no_zero)$vector),
+     sd(page.rank(make_ego_graph_all_full_no_zero)$vector)
+     ))
+```
+ 
+#CAPS-AD igrpah ego object - IN connections
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+make_ego_graph_in_full_no_zero<-make_ego_graph(full_no_zero, order=1, V(full_no_zero)[V2_LABEL_ID=="q170_CAPS...CAPS.AD"], mode ="in", mindist = 0)[[1]]
+```
+##CAPS AD -Plotting ego based on Page Rank - IN 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(make_ego_graph_in_full_no_zero, 
+     layout=layout.kamada.kawai(make_ego_graph_in_full_no_zero), 
+     vertex.label=get.vertex.attribute(make_ego_graph_in_full_no_zero,"LABEL_COR"),
+     vertex.size=100*page.rank(make_ego_graph_in_full_no_zero)$vector,
+     edge.arrow.size=0.1,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label.cex=10*(page.rank(make_ego_graph_in_full_no_zero)$vector+0.01),
+     edge.width=log(edge.betweenness(make_ego_graph_in_full_no_zero))/100,
+     edge.curved = TRUE)
+
+#Solving Problems with legend rendering 
+a<-V(make_ego_graph_in_full_no_zero)$LABEL_COR
+b<-V(make_ego_graph_in_full_no_zero)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=1, y=1.25,
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .8)
+
+#Adding Title
+  title("Ego Network CAPS AD Page Rank Sized - In connections from CAPS AD - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x = -1, y = -1.2, labels = 
+   sprintf("Mean Page Rank Scores: %.2f\n SD Page Rank Scores: %.2f",
+     mean(page.rank(make_ego_graph_in_full_no_zero)$vector),
+     sd(page.rank(make_ego_graph_in_full_no_zero)$vector)
+     ))
+```
+
+#CAPS-AD igrpah ego object - OUT connections
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+make_ego_graph_out_full_no_zero<-make_ego_graph(full_no_zero, order=1, V(full_no_zero)[V2_LABEL_ID=="q170_CAPS...CAPS.AD"], mode ="out", mindist = 0)[[1]]
+```
+##CAPS AD -Plotting ego based on Page Rank - OUT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(make_ego_graph_out_full_no_zero, 
+     layout=layout.kamada.kawai(make_ego_graph_out_full_no_zero), 
+     vertex.label=get.vertex.attribute(make_ego_graph_out_full_no_zero,"LABEL_COR"),
+     vertex.size=100*page.rank(make_ego_graph_out_full_no_zero)$vector,
+     edge.arrow.size=0.1,
+    vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label.cex=10*(page.rank(make_ego_graph_out_full_no_zero)$vector+0.01),
+     edge.width=log(edge.betweenness(make_ego_graph_out_full_no_zero))/100,
+     edge.curved = TRUE)
+
+#Solving Problems with legend rendering 
+a<-V(make_ego_graph_out_full_no_zero)$LABEL_COR
+b<-V(make_ego_graph_out_full_no_zero)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=1, y=1.25,
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .8)
+
+#Adding Title
+  title("Ego Network Page Rank Sized - Out Connections from CAPSAD - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x = -1, y = -1.2, labels = 
+   sprintf("Mean Page Rank Scores: %.2f\n SD Page Rank Scores: %.2f",
+     mean(page.rank(make_ego_graph_out_full_no_zero)$vector),
+     sd(page.rank(make_ego_graph_out_full_no_zero)$vector)
+     ))
+```
+
+#Removing CAPSAD from its own ego network-  Example considering its high page rank and resilience test
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+make_ego_graph_all_full_no_zero_without_CAPSAD<-delete_vertices(make_ego_graph_all_full_no_zero,V(make_ego_graph_all_full_no_zero)[V2_LABEL_ID=="q170_CAPS...CAPS.AD"])
+```
+##Plotting ego based on Page Rank 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(make_ego_graph_all_full_no_zero_without_CAPSAD, 
+     layout=layout.kamada.kawai(make_ego_graph_all_full_no_zero_without_CAPSAD), 
+     vertex.label=get.vertex.attribute(make_ego_graph_all_full_no_zero_without_CAPSAD,"LABEL_COR"),
+     vertex.size=100*(page.rank(make_ego_graph_all_full_no_zero_without_CAPSAD)$vector+0.01),
+     edge.arrow.size=0.1,
+     vertex.frame.color="#ffffff",
+      vertex.label.color="black",
+     vertex.label.cex=(page.rank(make_ego_graph_all_full_no_zero_without_CAPSAD)$vector+0.01)*10,
+     edge.width=edge.betweenness(make_ego_graph_all_full_no_zero_without_CAPSAD)/500,
+     edge.curved = TRUE)
+#Solving Problems with legend rendering 
+a<-V(make_ego_graph_all_full_no_zero_without_CAPSAD)$LABEL_COR
+b<-V(make_ego_graph_all_full_no_zero_without_CAPSAD)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=1, y=1.25,
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .8)
+
+#Adding Title
+  title("Ego Network CAPS AD Page Rank Sized - All Connections Removing CAPS AD - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x = -1, y = -1.2, labels = 
+   sprintf("Mean Page Rank Scores: %.2f\n SD Page Rank Scores: %.2f",
+     mean(page.rank(make_ego_graph_all_full_no_zero_without_CAPSAD)$vector),
+     sd(page.rank(make_ego_graph_all_full_no_zero_without_CAPSAD)$vector)
+     ))
+```
+
+#Removing high complexty services from CAPSAD ego network -  Example considering its high page rank and resilience test (!= CAPSAD, PRONTO-SOCORRO, AMBULATÓRIO, SAMU)
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Making igrpah ego object - without (!= CAPSAD, PRONTO-SOCORRO, AMBULATÓRIO, SAMU)
+
+#Removing high complex services
+
+make_ego_graph_all_full_no_zero_without_complex<-
+  delete_vertices(make_ego_graph_all_full_no_zero,
+                  c(V(make_ego_graph_all_full_no_zero)
+                  [V2_LABEL_ID=="q170_CAPS...CAPS.AD"],#Removing CAPSAD - Psychosocial Treatment Center
+                  V(make_ego_graph_all_full_no_zero)
+                  [V2_LABEL_ID=="q163_Assistência.Hospitalar...Hospital.de.Pronto.Socorro...HPS"], #Removing PRONTO-SOCORRO - Emergency Hospital
+                  V(make_ego_graph_all_full_no_zero)
+                  [V2_LABEL_ID=="q192_Ambulatório.de.Saúde.Mental...Centro.de.Atenção.à.Saúde.Mental..CASM."],#Removing AMBULATÓRIO - Outpatient Center
+                  V(make_ego_graph_all_full_no_zero)
+                  [V2_LABEL_ID=="q191_Urgência.Emergência...Serviço.de.Atendimento.Móvel.de.Urgência..SAMU."] #Removing SAMU - Emergency Mobile Service ? WTF
+                  ))
+```
+
+##Plotting ego based on Page Rank 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(make_ego_graph_all_full_no_zero_without_complex, 
+     layout=layout.kamada.kawai(make_ego_graph_all_full_no_zero_without_complex), 
+     vertex.label=get.vertex.attribute(make_ego_graph_all_full_no_zero_without_complex,"LABEL_COR"),
+     vertex.size=(page.rank(make_ego_graph_all_full_no_zero_without_complex)$vector+0.01)*100,
+     edge.arrow.size=0.1,
+     vertex.label.cex=(page.rank(make_ego_graph_all_full_no_zero_without_complex)$vector+0.01)*20,
+     edge.width=edge.betweenness(make_ego_graph_all_full_no_zero_without_complex)/500,
+     vertex.frame.color="#ffffff",
+      vertex.label.color="black",
+     edge.curved = TRUE)
+
+#Solving Problems with legend rendering 
+a<-V(make_ego_graph_all_full_no_zero_without_complex)$LABEL_COR
+b<-V(make_ego_graph_all_full_no_zero_without_complex)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=1, y=1.25,
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .8)
+
+#Adding Title
+  title("Ego Network CAPS AD Page Rank Sized - All Connections Removing High Complexty Services - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x = -1, y = -1.2, labels = 
+   sprintf("Mean Page Rank Scores: %.2f\n SD Page Rank Scores: %.2f",
+     mean(page.rank(make_ego_graph_all_full_no_zero_without_complex)$vector),
+     sd(page.rank(make_ego_graph_all_full_no_zero_without_complex)$vector)
+     ))
+```
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/20_ego_full_no_zero.RData") 
+```
+
+

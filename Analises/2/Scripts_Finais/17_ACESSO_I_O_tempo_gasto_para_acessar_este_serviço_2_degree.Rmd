@@ -1,0 +1,1049 @@
+---
+title: "SNA Degrees 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/var15_data.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+#suppressMessages(library(car))
+#suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+#suppressMessages(library(miniCRAN))
+#suppressMessages(library(magrittr))
+#suppressMessages(library(keyplayer))
+#suppressMessages(library(dplyr))
+#suppressMessages(library(feather))
+#suppressMessages(library(visNetwork))
+#suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#var15<-simplify(var15) #Simplify
+```
+
+
+#Centrality Measures
+
+• For undirected graphs:
+
+– Actor centrality - involvement (connections) with other actors
+
+• For directed graphs:
+
+– Actor centrality - source of the ties (outgoing edges)
+
+– Actor prestige - recipient of many ties (incoming edges)
+
+In general - high centrality degree means direct contact with many other actors
+
+##Centrality Degree (number of ties/nearest neighbors).
+
+##Saving in igrpah object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var15)$indegree<-degree(var15, mode = "in") # Actor prestige - recipient of many ties (incoming edges)
+V(var15)$outdegree <- degree(var15, mode = "out") # Actor centrality - source of the ties (outgoing edges)
+V(var15)$totaldegree <- degree(var15, mode = "total")
+```
+##Saving in Global Environment as an object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_indegree<-degree(var15, mode = "in")
+var15_outdegree<-degree(var15, mode = "out")
+var15_totaldegree<-degree(var15, mode = "total")
+```
+
+#Centrality Degree Descriptive Statistics - non-normalized
+
+##Centrality Degree Descriptive Statistics - In
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##in
+summary(var15_indegree)
+sd(var15_indegree)
+```  
+##Histogram var15 degree - In
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var15, mode = "in", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(var15)/10, main="Histogram of Indegree Nodes - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)")
+```  
+
+##Centrality Degree Descriptive Statistics - Out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##out
+summary(var15_outdegree)
+sd(var15_outdegree)
+```  
+
+##Histogram var15 degree - Out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var15, mode = "out", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(var15)/10, main="Histogram of Outdegree Nodes - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)")
+```  
+
+##Centrality Degree Descriptive Statistics - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##all
+summary(var15_totaldegree)
+sd(var15_totaldegree)
+```  
+##Histogram var15 degree - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var15, mode = "all", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(var15)/10, main="Histogram of All Degree Nodes - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)")
+```  
+
+#Compute strength - weighted
+
+A slightly more nuanced metric is “strength centrality”, which is defined as the sum of the weights of all the connections for a given node. This is also sometimes called “weighted degree centrality”
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var15)$var15_strength<- strength(var15, weights=E(var15)$weight)
+var15_strength<- strength(var15, weights=E(var15)$weight)
+```
+##Strength Stats
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var15_strength)
+sd(var15_strength)
+```
+##Histogram var15 degree - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(strength(var15, weights=E(var15)$weight), ylab="Frequency", xlab="Degree",  breaks=vcount(var15)/10, main="Histogram of Strength Degree Nodes - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)")
+```  
+
+#Centrality Degree Normalized
+
+##Centrality Degree Normalized saving igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var15)$indegree_n<-degree(var15, mode = "in", normalized = T)
+V(var15)$outdegree_n<- degree(var15, mode = "out", normalized = T)
+V(var15)$totaldegree_n<- degree(var15, mode = "total", normalized = T)
+```
+##Saving in Global Environment as an object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_indegree_n<-degree(var15, mode = "in", normalized = T)
+var15_outdegree_n<-degree(var15, mode = "out", normalized = T)
+var15_totaldegree_n<-degree(var15, mode = "total", normalized = T)
+```
+##Centrality Degree Normalized Descriptive Statistics - in
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var15_indegree_n)
+sd(var15_indegree_n)
+```
+##Histogram var15 degree normalized - in
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var15, mode = "in", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(var15)/10, main="Histogram of Normalized Indegree Nodes - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)")
+```
+
+##Centrality Degree Normalized Descriptive Statistics - out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var15_outdegree_n)
+sd(var15_outdegree_n)
+```
+
+##Histogram var15 degree normalized - out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var15, mode = "out", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(var15)/10, main="Histogram of Normalized Outdegree Nodes - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)")
+```
+
+##Centrality Degree Normalized Descriptive Statistics - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var15_totaldegree_n)
+sd(var15_totaldegree_n)
+```
+
+##Histogram var15 degree normalized - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var15, mode = "all", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(var15)/10, main="Histogram of Normalized All Degree Nodes - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)")
+```
+
+#Centralization Degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var15)$var15_centr_degree <- centralization.degree(var15)$res
+var15_centr_degree <- centralization.degree(var15)
+```
+
+##Centralization
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_centr_degree$centralization
+```
+##Theoretical Max
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_centr_degree$theoretical_max
+```
+
+#Degree distribution considering total equal one
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_degree.distribution<-degree.distribution(var15)
+```
+
+##Degree distribution Descriptive Stats
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var15_degree.distribution)
+sd(var15_degree.distribution)
+```
+
+##Histogram var15 distribution degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree.distribution(var15), breaks=vcount(var15)/10, ylab="Frequency", xlab="Degree Distribuition", main="Histogram of Degree Distribuition - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)")
+```
+
+##Degree Probability Distribution
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dd <- degree.distribution(var15, cumulative=T, mode="all")
+```
+
+##Degree Probability Distribution - Plot Cumulative Frequency
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(dd, pch=19, cex=1, col="orange", xlab="Degree", ylab="Cumulative Frequency", main= "Cumulative Frequency of 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15) ")
+```
+
+#Log-Log Degree Distribution - Scale Free Network - Does it fit to power law ?
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dd.var15 <- degree.distribution(var15)
+d <- 1:max(degree(var15))-1
+ind <- (dd.var15 != 0)
+```
+
+##Plot Log-Log Degree Distribution
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(d[ind], 
+     dd.var15[ind], 
+     log="xy", 
+     col="blue",
+     xlab=c("Log-Degree"), 
+     ylab=c("Log-Intensity"),
+     main="Log-Log Degree Distribution For 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)"
+     )
+```
+
+#Average Neighbor Degree versus Vertex Degree (log-log scale for 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15))
+
+The neighborhood of a given order y of a vertex v includes all vertices which are closer to v than the order. Ie. order y=0 is always v itself, order 1 is v plus its immediate neighbors, order 2 is order 1 plus the immediate neighbors of the vertices in order 1, etc.
+
+##Simplify graph first 
+```{r}
+var15_simplified<-simplify(var15)
+```
+
+
+##Average Neighbor Degree versus vertex degree (log-log scale for var15)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_a.nn.deg <- graph.knn(var15_simplified, weights =E(var15_simplified)$weight)$knn %>% round(1)
+```
+
+##Saving to igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var15_simplified)$var15_a.nn.deg <- graph.knn(var15_simplified, weights=E(var15_simplified)$weight)$knn
+```
+
+##Table Average Neighbor Degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d<-cbind(V(var15_simplified)$LABEL_COR,var15_a.nn.deg)
+datatable(d)
+```
+
+##Plotting Average Neighbor Degree versus vertex degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(degree(var15_simplified), 
+     var15_a.nn.deg, 
+     log="xy", 
+     col="goldenrod", 
+     xlab=c("Log Vertex Degree"),
+     ylab=c("Log Average Neighbor Degree"),
+     main="Average Neighbor Degree vs Vertex Degree - Log-Log Scale for 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)"
+     )
+```
+
+#Average Weighted Neighbor Degree versus vertex degree (log-log scale for weighted 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15))
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_a.nn.deg_w <- graph.knn(var15_simplified, weights=E(var15_simplified)$weight)$knn %>% round(1)
+```
+
+##Saving to igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var15_simplified)$var15_a.nn.deg_w <-var15_a.nn.deg <- graph.knn(var15_simplified, weights=E(var15_simplified)$weight)$knn
+```
+
+##Average Weighted Neighbor Descriptive
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var15_a.nn.deg_w)
+sd(var15_a.nn.deg_w, na.rm = T)
+```
+
+##Table Average Neighbor Degree Weighted
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d<-cbind(V(var15_simplified)$LABEL_COR,var15_a.nn.deg_w)
+datatable(d)
+```
+
+##Plotting Average Neighbor Degree versus vertex degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(degree(var15_simplified), 
+     var15_a.nn.deg, 
+     log="xy", 
+     col="goldenrod", 
+     xlab=c("Log Vertex Degree"),
+     ylab=c("Log Average Neighbor Degree"),
+     main="Average Weighted Neighbor Degree vs Vertex Degree - Log-Log Scale For Weighted 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)"
+     )
+```
+
+#Degree Centralities Dinamic Table
+
+##Getting Degree Measures
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_indegree<-degree(var15, mode = "in")
+var15_outdegree<-degree(var15, mode = "out")
+var15_totaldegree<-degree(var15, mode = "total")
+var15_strength<- strength(var15, weights=E(var15)$weight)
+var15_indegree_n<-degree(var15, mode = "in", normalized = T) %>% round(3)
+var15_outdegree_n<-degree(var15, mode = "out", normalized = T) %>% round(3)
+var15_totaldegree_n<-degree(var15, mode = "total", normalized = T) %>% round(3)
+var15_centr_degree <- centralization.degree(var15)$res
+var15_a.nn.deg <- graph.knn(var15_simplified)$knn %>% round(1)
+var15_a.nn.deg_w <- graph.knn(var15_simplified, weights=E(var15_simplified)$weight)$knn %>% round(1)
+```
+
+##Creating a dataframe of measures
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_df_degree <- data.frame(var15_indegree,
+var15_outdegree, 
+var15_totaldegree,
+var15_indegree_n, 
+var15_outdegree_n,
+var15_totaldegree_n,
+var15_strength,
+var15_centr_degree,
+var15_a.nn.deg,
+var15_a.nn.deg_w) %>% round(3)
+
+#Adding type
+var15_df_degree <-cbind(var15_df_degree, V(var15)$LABEL_COR)
+
+#Adding names
+names(var15_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+var15_df_degree<-var15_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var15_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var15_df_degree, by=list(var15_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(var15_df_degree, by=list(var15_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+##Creating a dataframe of measures (Natureza Governamental)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_df_degree <- data.frame(var15_indegree,
+var15_outdegree, 
+var15_totaldegree,
+var15_indegree_n, 
+var15_outdegree_n,
+var15_totaldegree_n,
+var15_strength,
+var15_centr_degree,
+var15_a.nn.deg,
+var15_a.nn.deg_w) %>% round(3)
+
+#Adding type
+var15_df_degree <-cbind(var15_df_degree, V(var15)$TIPO1)
+
+#Adding names
+names(var15_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+var15_df_degree<-var15_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var15_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var15_df_degree, by=list(var15_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(var15_df_degree, by=list(var15_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a dataframe of measures (Setores)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var15_df_degree <- data.frame(var15_indegree,
+var15_outdegree, 
+var15_totaldegree,
+var15_indegree_n, 
+var15_outdegree_n,
+var15_totaldegree_n,
+var15_strength,
+var15_centr_degree,
+var15_a.nn.deg,
+var15_a.nn.deg_w) %>% round(3)
+
+#Adding type
+var15_df_degree <-cbind(var15_df_degree, V(var15)$TIPO2)
+
+#Adding names
+names(var15_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+var15_df_degree<-var15_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var15_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var15_df_degree, by=list(var15_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(var15_df_degree, by=list(var15_df_degree$Type), FUN=sd, na.rm=TRUE) 
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+names(aggdata_sd) <- c("Group", "In Degree(SD)", "Out Degree(SD)", "Total Degree(SD)","In Degree Normalized(SD)", "Out Degree Normalized(SD)", "Total Degree Normalized(SD)", "Strength(SD)","Centralization Degree(SD)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(SD)")
+```
+
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(SD)", "Out Degree(M)", "Out Degree(SD)","Total Degree(M)", "Total Degree(SD)", "In Degree Normalized(M)", "In Degree Normalized(SD)", "Out Degree Normalized(M)", "Out Degree Normalized(SD)", "Total Degree Normalized(M)", "Total Degree Normalized(SD)", "Strength(M)","Strength(SD)", "Centralization Degree(M)","Centralization Degree(SD)","Average Neighbor Degree(M)","Average Neighbor Degree(SD)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(SD)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var15, es=E(var15), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var15))
+maxC <- rep(Inf, vcount(var15))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var15, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var15)$weight)
+
+#PLotting
+plot(var15, 
+     layout=co,
+     edge.color=V(var15)$color[edge.start],
+     edge.arrow.size=(degree(var15)+1)/(30*mean(degree(var15))),
+     edge.width=E(var15)$weight/(10*mean(E(var15)$weight)),
+     edge.curved = TRUE,
+     vertex.size=log((degree(var15)+2))*(0.5*mean(degree(var15))),
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var15,"LABEL_COR"),
+     vertex.label.cex=log(degree(var15)+2)/mean(degree(var15)),
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var15)$LABEL_COR
+b<-V(var15)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Vertex Degree Sized - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)", sub = "Source: from authors ", cex = .5)
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\n Median Out Degree: %.2f",
+     median(degree(var15, mode="in")), 
+     median(degree(var15, mode="out"))
+   ))
+```
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+#Get Variable
+V(var15)$var15_color_degree<-V(var15)$totaldegree %>% round(0)
+
+#Creating brewer pallette
+vertex_var15_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var15)$var15_color_degree)), "RdBu"))(
+            length(unique(V(var15)$var15_color_degree)))
+
+#Saving as Vertex properties 
+V(var15)$vertex_var15_color_degree<- vertex_var15_color_degree[as.numeric(cut(degree(var15),breaks =length(unique(V(var15)$var15_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var15, es=E(var15), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var15))
+maxC <- rep(Inf, vcount(var15))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var15, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var15)$weight)
+
+#PLotting
+plot(var15, 
+     layout=co,
+     #edge.color=V(var15)$color[edge.start],
+     edge.arrow.size=(degree(var15)+1)/1000,
+     edge.width=E(var15)$weight/10,
+     edge.curved = TRUE,
+     vertex.color=V(var15)$vertex_var15_color_degree,
+     vertex.size=log((degree(var15)+2))*10,
+     vertex.size=20,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var15,"LABEL_COR"),
+     vertex.label.cex=log((degree(var15)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var15)$var15_color_degree
+b<-V(var15)$vertex_var15_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Vertex Degree Sized and Red to Blue - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\nMedian Out Degree: %.2f",
+     median(degree(var15, mode="in")), 
+     median(degree(var15, mode="out"))
+   ))
+```
+
+#Network Plotting Centralization - Degree Measures - Using Spectral Color as Distance Measure Representation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+#Get Variable
+V(var15)$var15_color_degree<-V(var15)$var15_centr_degree
+
+#Creating brewer pallette
+vertex_var15_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var15)$var15_color_degree)), "Spectral"))(
+            length(unique(V(var15)$var15_color_degree)))
+
+#Saving as Vertex properties 
+V(var15)$vertex_var15_color_degree<- vertex_var15_color_degree[as.numeric(cut(V(var15)$var15_color_degree,breaks =length(unique(V(var15)$var15_color_degree))))]
+
+#Plotting based only on degree measures 
+edge.start <- ends(var15, es=E(var15), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var15))
+maxC <- rep(Inf, vcount(var15))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var15, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var15)$weight)
+
+#PLotting
+plot(var15, 
+     layout=co,
+     edge.color=V(var15)$vertex_var15_color_degree[edge.start],
+     edge.arrow.size=(degree(var15)+1)/10000,
+     edge.width=E(var15)$weight/10,
+     edge.curved = TRUE,
+     vertex.color=V(var15)$vertex_var15_color_degree,
+     vertex.size=log((V(var15)$var15_centr_degree+2))*10,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var15,"LABEL_COR"),
+     vertex.label.cex=log((degree(var15)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var15)$var15_color_degree
+b<-V(var15)$vertex_var15_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Vertex Centralization Degree Sized Spectral Colored - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\nMedian Out Degree: %.2f",
+     median(degree(var15, mode="in")), 
+     median(degree(var15, mode="out"))
+   ))
+```
+
+#Alternative vizualization using degree in order to genarete sub-graphs - Higher than median degree network
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+# Network elements with lower than meadian degree
+higherthanmedian.network_var15<-V(var15)[degree(var15)<median(degree(var15))] 
+
+#Deleting vertices based in intersection betewenn var15 
+high_var15<-delete.vertices(var15, higherthanmedian.network_var15)
+
+#Plotting based only on degree measures 
+edge.start <- ends(high_var15, es=E(high_var15), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(high_var15))
+maxC <- rep(Inf, vcount(high_var15))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(high_var15, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(high_var15)$weight)
+
+#PLotting
+plot(high_var15, 
+     layout=co,
+     edge.color=V(high_var15)$color[edge.start],
+     edge.arrow.size=(degree(high_var15)+1)/1000,
+     edge.width=E(high_var15)$weight/10,
+     edge.curved = TRUE,
+     vertex.size=log((V(high_var15)$var15_centr_degree+2))*10,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(high_var15,"LABEL_COR"),
+     vertex.label.cex=log((degree(high_var15)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(high_var15)$LABEL_COR
+b<-V(high_var15)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=3,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Higher Than Median Degree - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean In Degree: %.2f\n Mean Out Degree: %.2f",
+     mean(degree(high_var15, mode="in")), 
+     mean(degree(high_var15, mode="out"))
+   )
+  )
+```
+
+#Alternative vizualization using degree in order to genarete sub-graphs - Lower than median degree network 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+# Network elements with lower than meadian degree
+lowerthanmedian.network_var15<-V(var15)[degree(var15)>median(degree(var15))] 
+
+#Deleting vertices based in intersection betewenn var15 
+small_var15<-delete.vertices(var15, lowerthanmedian.network_var15)
+
+#Plotting based only on degree measures 
+edge.start <- ends(small_var15, es=E(small_var15), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(small_var15))
+maxC <- rep(Inf, vcount(small_var15))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(small_var15, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(small_var15)$weight)
+
+#PLotting
+plot(small_var15, 
+     layout=co,
+     edge.color=V(small_var15)$color[edge.start],
+     edge.arrow.size=(degree(small_var15)+1)/1000,
+     edge.width=E(small_var15)$weight/10,
+     edge.curved = TRUE,
+     vertex.size=log((V(small_var15)$var15_centr_degree+2))*20,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(small_var15,"LABEL_COR"),
+     vertex.label.cex=log((degree(small_var15)+2))/3,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(small_var15)$LABEL_COR
+b<-V(small_var15)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Smaller Than Median Degree - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean In Degree: %.2f\nMean Out Degree: %.2f",
+     mean(degree(small_var15, mode="in")), 
+     mean(degree(small_var15, mode="out"))
+   )
+  )
+```
+
+#Plotting using Average Neighbor Degree
+```{r, echo=TRUE}
+#Set Seed
+set.seed(123)
+
+#Plotting based only on degree measures 
+edge.start <- ends(var15_simplified, es=E(var15_simplified), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var15_simplified))
+maxC <- rep(Inf, vcount(var15_simplified))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var15_simplified, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var15_simplified)$weight)
+
+#Plotting based only on degree measures  #var15_simplified_a.nn.deg
+V(var15_simplified)$var15_a.nn.deg<-as.numeric(graph.knn(var15_simplified)$knn)
+V(var15_simplified)$var15_a.nn.deg[V(var15_simplified)$var15_a.nn.deg=="NaN"]<-0
+
+#PLotting
+plot(var15_simplified, 
+     layout=co,
+     edge.color=V(var15_simplified)$color[edge.start],
+     edge.arrow.size=sqrt((V(var15_simplified)$var15_a.nn.deg)^2+1)/1000,
+     edge.width=E(var15_simplified)$weight/100,
+     edge.curved = TRUE,
+     vertex.color=V(var15_simplified)$color,
+     vertex.size=(sqrt((V(var15_simplified)$var15_a.nn.deg)^2))/5,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var15_simplified,"LABEL_COR"),
+     vertex.label.cex=(sqrt((V(var15_simplified)$var15_a.nn.deg)^2)+1)/500,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var15_simplified)$LABEL_COR
+b<-V(var15_simplified)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Average Neighbor Degree Sized - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median Average Neighbor Degree: %.2f",
+     median((var15_a.nn.deg+1))
+   ))
+```
+
+#Plotting using Average Neighbor Degree
+```{r, echo=TRUE}
+#Set Seed
+set.seed(123)
+
+#Plotting based only on degree measures 
+edge.start <- ends(var15_simplified, es=E(var15_simplified), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var15_simplified))
+maxC <- rep(Inf, vcount(var15_simplified))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var15_simplified, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var15_simplified)$weight)
+
+
+#Plotting based only on degree measures  #var15_a.nn.deg
+V(var15_simplified)$var15_a.nn.deg_w<-as.numeric(graph.knn(var15_simplified, weights = E(var15_simplified)$weight)$knn)
+V(var15_simplified)$var15_a.nn.deg_w[V(var15_simplified)$var15_a.nn.deg_w=="NaN"]<-0
+
+#PLotting
+plot(var15_simplified, 
+     layout=co,
+     edge.color=V(var15_simplified)$color[edge.start],
+     edge.arrow.size=sqrt((V(var15_simplified)$var15_a.nn.deg_w)^2+1)/1000,
+     edge.width=E(var15_simplified)$weight/100,
+     edge.curved = TRUE,
+     vertex.color=V(var15_simplified)$color,
+     vertex.size=(sqrt((V(var15_simplified)$var15_a.nn.deg_w)^2))/5,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var15_simplified,"LABEL_COR"),
+     vertex.label.cex=(sqrt((V(var15_simplified)$var15_a.nn.deg_w)^2)+1)/500,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var15_simplified)$LABEL_COR
+b<-V(var15_simplified)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Average Weighted Neighbor Degree Sized - 17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median Average Weighted Neighbor Degree: %.2f",
+     median((var15_a.nn.deg_w+1))
+   ))
+```
+
+#Circle Degree ***Too intensive computation*** #code
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Circle Degree ***Too intense computation***
+#A_var15 <- get.adjacency(var15, sparse=FALSE)
+#detach("package:igraph", unload=TRUE)
+#library(network)
+#g <- network::as.network.matrix(A_var15)
+#library(sna)
+#gplot.target(g, degree(g), main="Circle Degree")
+#library(igraph)
+```
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/var15_data.RData")
+```
+
+

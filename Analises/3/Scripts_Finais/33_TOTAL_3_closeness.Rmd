@@ -1,0 +1,1000 @@
+---
+title: "SNA Closeness 33_TOTAL"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 33_TOTAL
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/total_data.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+#suppressMessages(library(car))
+#suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+#suppressMessages(library(miniCRAN))
+#suppressMessages(library(magrittr))
+#suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+#suppressMessages(library(feather))
+#suppressMessages(library(visNetwork))
+#suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#total<-simplify(total) #Simplify
+```
+
+#Closeness - centrality based on distance to others in the graph 
+
+*How close an actor to all the other actors in network?*
+
+High closeness centrality - short communication path to others, minimal number of steps to reach others.
+
+Answers the “Kevin Bacon” question:
+
+*How many steps are required to access every other vertex from a given vertex?*
+
+One practical implication of this metric: it helps you gauge how information might spread within your network, and who might be the best people to leverage if you need to make sure information gets around. Link here: <http://www.tc.umn.edu/~alink/R-social-network-analysis.html>
+
+Closeness centrality can be defined as a measure of how far other nodes are from the node in question. Nodes with high closeness centrality are likely to be relatively efficient in receiving or transmitting information to/from distant parts of the social network.
+
+Scores may be interpreted as arising from a reciprocal process in which the centrality of each actor is proportional to the sum of the centralities of those actors to whom he or she is connected. 
+
+In general, vertices with high eigenvector centralities are those which are connected to many other vertices which are, in turn, connected to many others (and so on). (The perceptive may realize that this implies that the largest values will be obtained by individuals in large cliques (or high-density substructures)
+
+##Closeness Non-normalized
+
+###Saving to Igraph object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(total)$incloseness <- closeness(total, mode = "in", weights = E(total)$total) %>% round(6)
+V(total)$outcloseness <- closeness(total, mode = "out", weights = E(total)$total) %>% round(6)
+V(total)$totalcloseness <- closeness(total, mode = "total", weights = E(total)$total) %>% round(4)
+```
+
+###Saving to Environment
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_incloseness<- closeness(total, mode = "in", weights = E(total)$total) %>% round(6)
+total_outcloseness<- closeness(total, mode = "out", weights = E(total)$total) %>% round(6)
+total_totalcloseness<- closeness(total, mode = "total", weights = E(total)$total) %>% round(6)
+```
+
+##Closeness Non-normalized - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(total_incloseness)
+sd(total_incloseness)
+```
+
+###Network Plotting Based On Non-normalized Closeness - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(total)$incloseness<-closeness(total, weights = E(total)$total, mode="in")
+
+#Get Variable
+V(total)$total_color_degree<-round(V(total)$incloseness,6)
+
+#Creating brewer pallette
+vertex_total_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(total)$total_color_degree)), "RdBu"))(
+            length(unique(V(total)$total_color_degree)))
+
+#Saving as Vertex properties 
+V(total)$vertex_total_color_degree<-
+  vertex_total_color_degree[as.numeric(
+  cut(V(total)$total_color_degree,
+      breaks=length(unique(V(total)$total_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(total, es=E(total), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(total))
+maxC <- rep(Inf, vcount(total))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(total, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(total)$weight)
+
+
+#PLotting
+plot(total, 
+     layout=co,
+     edge.color=V(total)$vertex_total_color_degree[edge.start],
+     edge.arrow.size=closeness(total, weights = E(total)$total, mode="in"),
+     edge.width=E(total)$weight/mean(E(total)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(total)$vertex_total_color_degree,
+     vertex.size=closeness(total, weights = E(total)$total, mode="in")*10^5,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(total,"LABEL_COR"),
+     vertex.label.cex=(closeness(total, weights = E(total)$total, mode="in")+10^-5)*2000,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(total)$total_color_degree
+b<-V(total)$vertex_total_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized and Colored In - 33_TOTAL", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median In Closennes:%.4f\nSD In Closennes: %.5f",
+             median(closeness(total, mode="in", weights = E(total)$total)), 
+             sd(closeness(total, mode="in", weights = E(total)$total))
+             )
+       )
+```
+
+##Closeness Non-normalized - OUT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(total_outcloseness)
+sd(total_outcloseness)
+```
+
+
+###Network Plotting Based On Non-normalized Closeness - OUT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(total)$outcloseness<-closeness(total, weights = E(total)$total, mode="out")
+
+#Get Variable
+V(total)$total_color_degree<-round(V(total)$outcloseness,6)
+
+#Creating brewer pallette
+vertex_total_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(total)$total_color_degree)), "RdBu"))(
+            length(unique(V(total)$total_color_degree)))
+
+#Saving as Vertex properties 
+V(total)$vertex_total_color_degree<-
+  vertex_total_color_degree[as.numeric(
+  cut(V(total)$total_color_degree,
+      breaks=length(unique(V(total)$total_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(total, es=E(total), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(total))
+maxC <- rep(Inf, vcount(total))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(total, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(total)$weight)
+
+
+#PLotting
+plot(total, 
+     layout=co,
+     edge.color=V(total)$vertex_total_color_degree[edge.start],
+     edge.arrow.size=closeness(total, weights = E(total)$total, mode="out"),
+     edge.width=E(total)$weight/2*mean(E(total)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(total)$vertex_total_color_degree,
+     vertex.size=closeness(total, weights = E(total)$total, mode="out")*10^4,
+     vertex.frame.color="white",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(total,"LABEL_COR"),
+     vertex.label.cex=closeness(total, weights = E(total)$total, mode="out")*200,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(total)$total_color_degree
+b<-V(total)$vertex_total_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized and Colored OUT - 33_TOTAL", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median OUT Closennes:%.4f\nSD OUT Closennes: %.5f",
+             median(closeness(total, mode="out", weights = E(total)$total)), 
+             sd(closeness(total, mode="out", weights = E(total)$total))
+             )
+       )
+```
+
+##Closeness Non-normalized - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(total_totalcloseness)
+sd(total_totalcloseness)
+```
+
+###Network Plotting Based On Non-normalized Closeness - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(total)$allcloseness<-closeness(total, weights = E(total)$total, mode="all")
+
+#Get Variable
+V(total)$total_color_degree<-round(V(total)$allcloseness,6)
+
+#Creating brewer pallette
+vertex_total_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(total)$total_color_degree)), "RdBu"))(
+            length(unique(V(total)$total_color_degree)))
+
+#Saving as Vertex properties 
+V(total)$vertex_total_color_degree<-
+  vertex_total_color_degree[as.numeric(
+  cut(V(total)$total_color_degree,
+      breaks=length(unique(V(total)$total_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(total, es=E(total), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(total))
+maxC <- rep(Inf, vcount(total))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(total, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(total)$weight)
+
+
+#PLotting
+plot(total, 
+     layout=co,
+     edge.color=V(total)$vertex_total_color_degree[edge.start],
+     edge.arrow.size=closeness(total, weights = E(total)$total, mode="all"),
+     edge.width=E(total)$weight/2*mean(E(total)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(total)$vertex_total_color_degree,
+     vertex.size=closeness(total, weights = E(total)$total, mode="all")*10^4,
+     vertex.frame.color="white",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(total,"LABEL_COR"),
+     vertex.label.cex=(closeness(total, weights = E(total)$total, mode="all")+0.00001)*200,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(total)$total_color_degree
+b<-V(total)$vertex_total_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized and Colored all - 33_TOTAL", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median all Closennes:%.4f\nSD all Closennes: %.5f",
+             median(closeness(total, mode="all", weights = E(total)$total)), 
+             sd(closeness(total, mode="all", weights = E(total)$total))
+             )
+       )
+```
+
+##Closeness Normalized 
+
+###Saving to Igraph object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(total)$incloseness_n <- closeness(total, mode = "in",, weights = E(total)$total, normalized = T) %>% round(10)
+V(total)$outcloseness_n <- closeness(total, mode = "out", normalized = T, weights = E(total)$total) %>% round(6)
+V(total)$totalcloseness_n <- closeness(total, mode = "total", normalized = T, weights = E(total)$total) %>% round(6)
+```
+
+###Saving to Environment
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_incloseness_n<- closeness(total, mode = "in", normalized = T, weights = E(total)$total) %>% round(6)
+total_outcloseness_n<- closeness(total, mode = "out", normalized = T, weights = E(total)$total) %>% round(6)
+total_totalcloseness_n<- closeness(total, mode = "total", normalized = T, weights = E(total)$total) %>% round(6)
+```
+
+###Closeness Normalized  - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(total_incloseness_n)
+sd(total_incloseness_n)
+```
+
+##Network Plotting Based On Normalized Closeness - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(total)$incloseness_n<-closeness(total, weights = E(total)$total, mode="in", normalized = T)
+
+#Get Variable
+V(total)$total_color_degree<-round(V(total)$incloseness_n,6)
+
+#Creating brewer pallette
+vertex_total_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(total)$total_color_degree)), "RdBu"))(
+            length(unique(V(total)$total_color_degree)))
+
+#Saving as Vertex properties 
+V(total)$vertex_total_color_degree<-
+  vertex_total_color_degree[as.numeric(
+  cut(V(total)$total_color_degree,
+      breaks=length(unique(V(total)$total_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(total, es=E(total), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(total))
+maxC <- rep(Inf, vcount(total))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(total, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(total)$weight)
+
+
+#PLotting
+plot(total, 
+     layout=co,
+     edge.color=V(total)$vertex_total_color_degree[edge.start],
+     edge.arrow.size=closeness(total, weights = E(total)$total, mode="in",normalized = T),
+     edge.width=E(total)$weight/10*mean(E(total)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(total)$vertex_total_color_degree,
+     vertex.size=(closeness(total, weights = E(total)$total, mode="in",normalized = T))*1000,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(total,"LABEL_COR"),
+     vertex.label.cex=closeness(total, weights = E(total)$total, mode="in",normalized = T)*10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(total)$total_color_degree
+b<-V(total)$vertex_total_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized Normalized In - 33_TOTAL", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median In Closennes:%.4f\nSD In Closennes: %.5f",
+             median(closeness(total, mode="in", weights = E(total)$total, normalized = T)), 
+             sd(closeness(total, mode="in", weights = E(total)$total, normalized = T))
+             )
+       )
+```
+###Closeness Normalized  - OUT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(total_outcloseness_n)
+sd(total_outcloseness_n)
+```
+
+##Network Plotting Based On Normalized Closeness - OUT
+
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(total)$outcloseness_n<-closeness(total, weights = E(total)$total, mode="out", normalized = T)
+
+#Get Variable
+V(total)$total_color_degree<-round(V(total)$outcloseness_n,6)
+
+#Creating brewer pallette
+vertex_total_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(total)$total_color_degree)), "RdBu"))(
+            length(unique(V(total)$total_color_degree)))
+
+#Saving as Vertex properties 
+V(total)$vertex_total_color_degree<-
+  vertex_total_color_degree[as.numeric(
+  cut(V(total)$total_color_degree,
+      breaks=length(unique(V(total)$total_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(total, es=E(total), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(total))
+maxC <- rep(Inf, vcount(total))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(total, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(total)$weight)
+
+
+#PLotting
+plot(total, 
+     layout=co,
+     edge.color=V(total)$vertex_total_color_degree[edge.start],
+     edge.arrow.size=closeness(total, weights = E(total)$total, mode="out",normalized = T),
+     edge.width=E(total)$weight/10*mean(E(total)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(total)$vertex_total_color_degree,
+     vertex.size=(closeness(total, weights = E(total)$total, mode="out",normalized = T))*100,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(total,"LABEL_COR"),
+     vertex.label.cex=closeness(total, weights = E(total)$total, mode="out",normalized = T)*1.5,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(total)$total_color_degree
+b<-V(total)$vertex_total_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized Normalized OUT - 33_TOTAL", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median OUT Closennes:%.4f\nSD OUT Closennes: %.5f",
+             median(closeness(total, mode="out", weights = E(total)$total, normalized = T)), 
+             sd(closeness(total, mode="out", weights = E(total)$total, normalized = T))
+             )
+       )
+```
+
+###Closeness Normalized - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(total_totalcloseness_n)
+sd(total_totalcloseness_n)
+```
+
+##Network Plotting Based On Normalized Closeness - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(total)$allcloseness_n<-closeness(total, weights = E(total)$total, mode="all", normalized = T)
+
+#Get Variable
+V(total)$total_color_degree<-round(V(total)$allcloseness_n,6)
+
+#Creating brewer pallette
+vertex_total_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(total)$total_color_degree)), "RdBu"))(
+            length(unique(V(total)$total_color_degree)))
+
+#Saving as Vertex properties 
+V(total)$vertex_total_color_degree<-
+  vertex_total_color_degree[as.numeric(
+  cut(V(total)$total_color_degree,
+      breaks=length(unique(V(total)$total_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(total, es=E(total), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(total))
+maxC <- rep(Inf, vcount(total))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(total, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(total)$weight)
+
+
+#PLotting
+plot(total, 
+     layout=co,
+     edge.color=V(total)$vertex_total_color_degree[edge.start],
+     edge.arrow.size=closeness(total, weights = E(total)$total, mode="all",normalized = T),
+     edge.width=E(total)$weight/10*mean(E(total)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(total)$vertex_total_color_degree,
+     vertex.size=(closeness(total, weights = E(total)$total, mode="all",normalized = T))*100,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(total,"LABEL_COR"),
+     vertex.label.cex=closeness(total, weights = E(total)$total, mode="all",normalized = T)*1.5,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(total)$total_color_degree
+b<-V(total)$vertex_total_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized Normalized ALL - 33_TOTAL", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median ALL Closennes:%.4f\nSD ALL Closennes: %.5f",
+             median(closeness(total, mode="all", weights = E(total)$total, normalized = T)), 
+             sd(closeness(total, mode="all", weights = E(total)$total, normalized = T))
+             )
+       )
+```
+
+##Closeness Normalized 
+
+###Saving to Igraph object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(total)$incloseness_n <- closeness(total, weights = E(total)$total, mode = "in", normalized = T) %>% round(6)
+V(total)$outcloseness_n <- closeness(total, weights = E(total)$total, mode = "out", normalized = T) %>% round(6)
+V(total)$totalcloseness_n <- closeness(total, weights = E(total)$total, mode = "total", normalized = T) %>% round(6)
+```
+
+##Centralization Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(total)$total_centr_closeness<- centralization.closeness(total)$res
+total_centr_closeness<- centralization.closeness(total)$res
+total_centr_closeness_all<- centralization.closeness(total)
+```
+
+###Centralization
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_centr_closeness_all$centralization
+```
+
+###Theoretical Max
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_centr_closeness_all$theoretical_max
+```
+
+##Network Plotting Based On Centralization Closeness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(total)$total_centr_closeness<- centralization.closeness(total)$res
+
+#Get Variable
+V(total)$total_color_degree<-round(V(total)$total_centr_closeness,6)
+
+#Creating brewer pallette
+vertex_total_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(total)$total_color_degree)), "Spectral"))(
+            length(unique(V(total)$total_color_degree)))
+
+#Saving as Vertex properties 
+V(total)$vertex_total_color_degree<-
+  vertex_total_color_degree[as.numeric(
+  cut(V(total)$total_color_degree,
+      breaks=length(unique(V(total)$total_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(total, es=E(total), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(total))
+maxC <- rep(Inf, vcount(total))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(total, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(total)$weight)
+
+
+#PLotting
+plot(total, 
+     layout=co,
+     edge.color=V(total)$vertex_total_color_degree[edge.start],
+     edge.arrow.size=centralization.closeness(total)$res,
+     edge.width=E(total)$weight/10*mean(E(total)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(total)$vertex_total_color_degree,
+     vertex.size=centralization.closeness(total)$res*100,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(total,"LABEL_COR"),
+     vertex.label.cex=centralization.closeness(total)$res,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(total)$total_color_degree
+b<-V(total)$vertex_total_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Centralization Closeness - 33_TOTAL", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median Centralization Closeness:%.4f\nSD Centralization Closeness: %.5f",
+             median(centralization.closeness(total)$res), 
+             sd(centralization.closeness(total)$res)
+             )
+       )
+```
+
+#Closeness Dinamic Table
+##Getting Closeness Measures
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_incloseness<- closeness(total, weights = E(total)$total, mode = "in") %>% round(6)
+total_outcloseness<- closeness(total, weights = E(total)$total, mode = "out") %>% round(6)
+total_totalcloseness<- closeness(total, weights = E(total)$total, mode = "total") %>% round(6)
+total_incloseness_n<- closeness(total,weights = E(total)$total, mode = "in", normalized = T) %>% round(6)
+total_outcloseness_n<- closeness(total,weights = E(total)$total, mode = "out", normalized = T) %>% round(6)
+total_totalcloseness_n<- closeness(total,weights = E(total)$total, mode = "total", normalized = T) %>% round(6)
+total_centr_closeness <- centralization.closeness(total)$res %>% round(6)
+```
+
+##Creating a datagrame of measures
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_df_closseness <- data.frame(
+total_incloseness,
+total_outcloseness,
+total_totalcloseness,
+total_incloseness_n,
+total_outcloseness_n,
+total_totalcloseness_n,
+total_centr_closeness) %>% round(6)
+
+#Adding type
+total_df_closseness <-cbind(total_df_closseness, V(total)$LABEL_COR)
+
+#Adding names
+names(total_df_closseness) <- c("In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized", "Total Closeness Normalized","Centralization Closeness","Type")
+
+#Ordering Variables
+total_df_closseness<-total_df_closseness[c("Type","In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized","Total Closeness Normalized", "Centralization Closeness")]
+```
+
+##General tabel - DT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_df_closseness, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(total_df_closseness, by=list(total_df_closseness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","In Closeness(M)", "Out Closeness(M)", "Total Closeness(M)","In Closeness Normalized(M)", "Out Closeness Normalized(M)", "Total Closeness Normalized(M)","Centralization Closeness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(total_df_closseness, by=list(total_df_closseness$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","In Closeness(SD)", "Out Closeness(SD)", "Total Closeness(SD)","In Closeness Normalized(SD)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(SD)", "Centralization Closeness(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+
+#Merging mean and standart deviation
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Closeness(M)", "In Closeness(SD)", "Out Closeness(M)", "Out Closeness(SD)", "Total Closeness(M)","Total Closeness(SD)","In Closeness Normalized(M)", "In Closeness Normalized(SD)", "Out Closeness Normalized(M)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(M)","Total Closeness Normalized(SD)", "Centralization Closeness(M)","Centralization Closeness(SD)")]
+```
+
+##Plotting final table with round for Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a datagrame of measures (Natureza Governamental)
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_df_closseness <- data.frame(
+total_incloseness,
+total_outcloseness,
+total_totalcloseness,
+total_incloseness_n,
+total_outcloseness_n,
+total_totalcloseness_n,
+total_centr_closeness) %>% round(6)
+
+#Adding type
+total_df_closseness <-cbind(total_df_closseness, V(total)$TIPO1)
+
+#Adding names
+names(total_df_closseness) <- c("In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized", "Total Closeness Normalized","Centralization Closeness","Type")
+
+#Ordering Variables
+total_df_closseness<-total_df_closseness[c("Type","In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized","Total Closeness Normalized", "Centralization Closeness")]
+```
+
+##General tabel - DT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_df_closseness, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(total_df_closseness, by=list(total_df_closseness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","In Closeness(M)", "Out Closeness(M)", "Total Closeness(M)","In Closeness Normalized(M)", "Out Closeness Normalized(M)", "Total Closeness Normalized(M)","Centralization Closeness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(total_df_closseness, by=list(total_df_closseness$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","In Closeness(SD)", "Out Closeness(SD)", "Total Closeness(SD)","In Closeness Normalized(SD)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(SD)", "Centralization Closeness(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+
+#Merging mean and standart deviation
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Closeness(M)", "In Closeness(SD)", "Out Closeness(M)", "Out Closeness(SD)", "Total Closeness(M)","Total Closeness(SD)","In Closeness Normalized(M)", "In Closeness Normalized(SD)", "Out Closeness Normalized(M)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(M)","Total Closeness Normalized(SD)", "Centralization Closeness(M)","Centralization Closeness(SD)")]
+```
+
+##Plotting final table with round for Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a datagrame of measures (Setores)
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_df_closseness <- data.frame(
+total_incloseness,
+total_outcloseness,
+total_totalcloseness,
+total_incloseness_n,
+total_outcloseness_n,
+total_totalcloseness_n,
+total_centr_closeness) %>% round(6)
+
+#Adding type
+total_df_closseness <-cbind(total_df_closseness, V(total)$TIPO2)
+
+#Adding names
+names(total_df_closseness) <- c("In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized", "Total Closeness Normalized","Centralization Closeness","Type")
+
+#Ordering Variables
+total_df_closseness<-total_df_closseness[c("Type","In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized","Total Closeness Normalized", "Centralization Closeness")]
+```
+
+##General tabel - DT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_df_closseness, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(total_df_closseness, by=list(total_df_closseness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","In Closeness(M)", "Out Closeness(M)", "Total Closeness(M)","In Closeness Normalized(M)", "Out Closeness Normalized(M)", "Total Closeness Normalized(M)","Centralization Closeness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(total_df_closseness, by=list(total_df_closseness$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","In Closeness(SD)", "Out Closeness(SD)", "Total Closeness(SD)","In Closeness Normalized(SD)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(SD)", "Centralization Closeness(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+
+#Merging mean and standart deviation
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Closeness(M)", "In Closeness(SD)", "Out Closeness(M)", "Out Closeness(SD)", "Total Closeness(M)","Total Closeness(SD)","In Closeness Normalized(M)", "In Closeness Normalized(SD)", "Out Closeness Normalized(M)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(M)","Total Closeness Normalized(SD)", "Centralization Closeness(M)","Centralization Closeness(SD)")]
+```
+
+##Plotting final table with round for Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/total_data.RData")
+```
+

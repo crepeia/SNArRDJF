@@ -1,0 +1,454 @@
+---
+title: "SNA Betwenness Vertex fuull_no_zero_fancy"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# fuull_no_zero_fancy
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/acesso_positivo_data.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+#suppressMessages(library(car))
+#suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+#suppressMessages(library(miniCRAN))
+#suppressMessages(library(magrittr))
+#suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+#suppressMessages(library(feather))
+#suppressMessages(library(visNetwork))
+#suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#acesso_positivo<-simplify(acesso_positivo) #Simplify
+```
+
+#Betweenness - Number of shortest paths going through the actor σst(i)
+
+High betweenness centrality - vertex lies on many shortest paths. Probability that a communication from s
+to t will go through i - considering σst(i).
+
+Betweenness measures the number of shortest paths between nodes in the network that go through the node in question. Nodes with relatively high betweenness are likely to be key conduits of information flow across a network, and their removal may have a large impact on spreading phenomena.
+
+##Betweenness Centrality -(Vertex)
+
+Betweenness centrality based on a broker position connecting others or Number of geodesics that pass through the node or the edge. A higher number means an more important node.
+
+#Adding weight equal one for all analysis 
+```{r}
+E(acesso_positivo)$equalone<-1
+```
+
+###Saving objects
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(acesso_positivo)$betweenness <- betweenness(acesso_positivo, weights = E(acesso_positivo)$equalone) %>% round(1)
+acesso_positivo_betweenness <- betweenness(acesso_positivo, weights = E(acesso_positivo)$equalone) %>% round(1)
+```
+###Betweenness Centrality - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(acesso_positivo_betweenness)
+sd(acesso_positivo_betweenness)
+```
+
+##Betweenness Centrality Weighted - (Vertex)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(acesso_positivo)$acesso_positivo_betweenness_w <- betweenness(acesso_positivo, weights=E(acesso_positivo)$acesso_positivo) %>% round(1)
+acesso_positivo_betweenness_w <- betweenness(acesso_positivo, weights=E(acesso_positivo)$acesso_positivo) %>% round(1)
+```
+### Descriptive Betweenness Centrality Weighted - (Vertex) - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(acesso_positivo_betweenness_w)
+sd(acesso_positivo_betweenness_w)
+```
+##Centralization Betweenness
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(acesso_positivo)$acesso_positivo_centr_betweenness <- centralization.betweenness(acesso_positivo)$res
+acesso_positivo_centr_betweenness <- centralization.betweenness(acesso_positivo)
+```
+###Centralization
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+acesso_positivo_centr_betweenness$centralization
+```
+###Theoretical Max
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+acesso_positivo_centr_betweenness$theoretical_max
+```
+#Betweenness Vertex Centrality Dinamic Table
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Betweenness Vertex Centrality Measures Dinamic Table
+#Getting  Measures
+acesso_positivo_betweenness <- betweenness(acesso_positivo, weights=E(acesso_positivo)$equalone) %>% round(1)
+acesso_positivo_betweenness_w <- betweenness(acesso_positivo, weights=E(acesso_positivo)$acesso_positivo) %>% round(1)
+acesso_positivo_centr_betweenness <- centralization.betweenness(acesso_positivo)$res %>% round(1)
+
+#Creating a dataframe of measures
+acesso_positivo_df_betweenness <- data.frame(acesso_positivo_betweenness,
+acesso_positivo_betweenness_w,
+acesso_positivo_centr_betweenness) %>% round(1)
+
+#Adding type
+acesso_positivo_df_betweenness <-cbind(acesso_positivo_df_betweenness, V(acesso_positivo)$LABEL_COR)
+
+#Adding names
+names(acesso_positivo_df_betweenness) <- c("Betweenness", "Betweenness Weighted", "Centralization Betweenness","Type")
+
+#Ordering Variables
+acesso_positivo_df_betweenness<-acesso_positivo_df_betweenness[c("Type","Betweenness", "Betweenness Weighted", "Centralization Betweenness")]
+```
+## General tabel for Betweenness
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(acesso_positivo_df_betweenness, filter = 'top')
+```
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(acesso_positivo_df_betweenness, by=list(acesso_positivo_df_betweenness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Betweenness(M)", "Betweenness Weighted(M)", "Centralization Betweenness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(acesso_positivo_df_betweenness, by=list(acesso_positivo_df_betweenness$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","Betweenness(SD)", "Betweenness Weighted(SD)", "Centralization Betweenness(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+```
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table<- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(1) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Betweenness(M)","Betweenness(SD)","Betweenness Weighted(M)", "Betweenness Weighted(SD)", "Centralization Betweenness(M)","Centralization Betweenness(SD)")]
+```
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Betweenness Vertex Centrality Dinamic Table (Natureza Governamental)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Betweenness Vertex Centrality Measures Dinamic Table
+#Getting  Measures
+acesso_positivo_betweenness <- betweenness(acesso_positivo, weights=E(acesso_positivo)$equalone) %>% round(1)
+acesso_positivo_betweenness_w <- betweenness(acesso_positivo, weights=E(acesso_positivo)$acesso_positivo) %>% round(1)
+acesso_positivo_centr_betweenness <- centralization.betweenness(acesso_positivo)$res %>% round(1)
+
+#Creating a dataframe of measures
+acesso_positivo_df_betweenness <- data.frame(acesso_positivo_betweenness,
+acesso_positivo_betweenness_w,
+acesso_positivo_centr_betweenness) %>% round(1)
+
+#Adding type
+acesso_positivo_df_betweenness <-cbind(acesso_positivo_df_betweenness, V(acesso_positivo)$TIPO1)
+
+#Adding names
+names(acesso_positivo_df_betweenness) <- c("Betweenness", "Betweenness Weighted", "Centralization Betweenness","Type")
+
+#Ordering Variables
+acesso_positivo_df_betweenness<-acesso_positivo_df_betweenness[c("Type","Betweenness", "Betweenness Weighted", "Centralization Betweenness")]
+```
+## General tabel for Betweenness
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(acesso_positivo_df_betweenness, filter = 'top')
+```
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(acesso_positivo_df_betweenness, by=list(acesso_positivo_df_betweenness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Betweenness(M)", "Betweenness Weighted(M)", "Centralization Betweenness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(acesso_positivo_df_betweenness, by=list(acesso_positivo_df_betweenness$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","Betweenness(SD)", "Betweenness Weighted(SD)", "Centralization Betweenness(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+```
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table<- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(1) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Betweenness(M)","Betweenness(SD)","Betweenness Weighted(M)", "Betweenness Weighted(SD)", "Centralization Betweenness(M)","Centralization Betweenness(SD)")]
+```
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Betweenness Vertex Centrality Dinamic Table (Setores)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Betweenness Vertex Centrality Measures Dinamic Table
+#Getting  Measures
+acesso_positivo_betweenness <- betweenness(acesso_positivo, weights=E(acesso_positivo)$equalone) %>% round(1)
+acesso_positivo_betweenness_w <- betweenness(acesso_positivo, weights=E(acesso_positivo)$acesso_positivo) %>% round(1)
+acesso_positivo_centr_betweenness <- centralization.betweenness(acesso_positivo)$res %>% round(1)
+
+#Creating a dataframe of measures
+acesso_positivo_df_betweenness <- data.frame(acesso_positivo_betweenness,
+acesso_positivo_betweenness_w,
+acesso_positivo_centr_betweenness) %>% round(1)
+
+#Adding type
+acesso_positivo_df_betweenness <-cbind(acesso_positivo_df_betweenness, V(acesso_positivo)$TIPO2)
+
+#Adding names
+names(acesso_positivo_df_betweenness) <- c("Betweenness", "Betweenness Weighted", "Centralization Betweenness","Type")
+
+#Ordering Variables
+acesso_positivo_df_betweenness<-acesso_positivo_df_betweenness[c("Type","Betweenness", "Betweenness Weighted", "Centralization Betweenness")]
+```
+## General tabel for Betweenness
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(acesso_positivo_df_betweenness, filter = 'top')
+```
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(acesso_positivo_df_betweenness, by=list(acesso_positivo_df_betweenness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Betweenness(M)", "Betweenness Weighted(M)", "Centralization Betweenness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(acesso_positivo_df_betweenness, by=list(acesso_positivo_df_betweenness$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","Betweenness(SD)", "Betweenness Weighted(SD)", "Centralization Betweenness(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+```
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table<- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(1) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Betweenness(M)","Betweenness(SD)","Betweenness Weighted(M)", "Betweenness Weighted(SD)", "Centralization Betweenness(M)","Centralization Betweenness(SD)")]
+```
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+
+##Plotting Betweenness Centrality - (Vertex)
+```{r}
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso_positivo, es=E(acesso_positivo), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso_positivo))
+maxC <- rep(Inf, vcount(acesso_positivo))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso_positivo, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(acesso_positivo)$weight)
+
+#Plotting
+plot(acesso_positivo, 
+     layout=co,
+     edge.color=V(acesso_positivo)$color[edge.start],
+     edge.arrow.size=(betweenness(acesso_positivo, weights = E(acesso_positivo)$acesso_positivo)+1)/100000,
+     edge.width=E(acesso_positivo)$weight/10*mean(E(acesso_positivo)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(acesso_positivo)$color,
+     vertex.size=betweenness(acesso_positivo, weights = E(acesso_positivo)$acesso_positivo )/250,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso_positivo,"LABEL_COR"),
+     vertex.label.cex=(betweenness(acesso_positivo, weights = E(acesso_positivo)$acesso_positivo)+1)/10000,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(acesso_positivo)$LABEL_COR
+b<-V(acesso_positivo)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+    title("Network Vertex Betweenness Sized - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels =    sprintf("Median Betweenness: %.2f\nSD Betweenness: %.2f",
+     median(betweenness(acesso_positivo, weights = E(acesso_positivo)$acesso_positivo)), 
+     sd(betweenness(acesso_positivo, weights = E(acesso_positivo)$acesso_positivo))
+             )
+       )
+```
+
+
+##Network Plotting Based On Centralization Betweenness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Get Variable
+V(acesso_positivo)$acesso_positivo_centr_betweenness<-(centralization.betweenness(acesso_positivo)$res)/100
+V(acesso_positivo)$acesso_positivo_color_degree<-round(V(acesso_positivo)$acesso_positivo_centr_betweenness,1)
+
+#Creating brewer pallette
+vertex_acesso_positivo_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(acesso_positivo)$acesso_positivo_color_degree)), "Spectral"))(
+            length(unique(V(acesso_positivo)$acesso_positivo_color_degree)))
+
+#Saving as Vertex properties 
+V(acesso_positivo)$vertex_acesso_positivo_color_degree<-
+  vertex_acesso_positivo_color_degree[as.numeric(
+  cut(V(acesso_positivo)$acesso_positivo_color_degree,
+      breaks=length(unique(V(acesso_positivo)$acesso_positivo_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso_positivo, es=E(acesso_positivo), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso_positivo))
+maxC <- rep(Inf, vcount(acesso_positivo))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso_positivo, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(acesso_positivo)$weight)
+
+
+#PLotting
+plot(acesso_positivo, 
+     layout=co,
+     edge.color=V(acesso_positivo)$vertex_acesso_positivo_color_degree[edge.start],
+     edge.arrow.size=closeness(acesso_positivo, weights = E(acesso_positivo)$acesso_positivo, mode="out"),
+     edge.width=E(acesso_positivo)$weight/10*mean(E(acesso_positivo)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(acesso_positivo)$vertex_acesso_positivo_color_degree,
+     vertex.size=(centralization.betweenness(acesso_positivo)$res+1)/250,
+     vertex.frame.color="white",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso_positivo,"LABEL_COR"),
+     vertex.label.cex=(centralization.betweenness(acesso_positivo)$res + 1)/10000,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(acesso_positivo)$acesso_positivo_color_degree
+b<-V(acesso_positivo)$vertex_acesso_positivo_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+  #Adding Title
+  title("Network Centralization Betweenness - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf("Median Betweenness:%.0f\nSDBetweenness: %.0f",
+     median(betweenness(acesso_positivo, weights = E(acesso_positivo)$acesso_positivo)), 
+     sd(betweenness(acesso_positivo, weights = E(acesso_positivo)$acesso_positivo))
+             )
+       )
+```
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/acesso_positivo_data.RData")
+```
+

@@ -1,0 +1,181 @@
+---
+title: "SNA Reachiability 3_REFERENCIA DE ENVIO (var1)"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 3_REFERENCIA DE ENVIO (var1)
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/12_cliques_var1.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+suppressMessages(library(car))
+suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+suppressMessages(library(miniCRAN))
+suppressMessages(library(magrittr))
+suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+suppressMessages(library(feather))
+suppressMessages(library(visNetwork))
+suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+var1<-simplify(var1) #Simplify
+```
+
+
+#Reachability
+
+An actor is "reachable" by another if there exists any set of connections by which we can trace from the source to the target actor, regardless of how many others fall between them. If the data are asymmetric or directed, it is possible that actor A can reach actor B, but that actor B cannot reach actor A. With symmetric or undirected data, of course, each pair of actors either are or are not reachable to one another. If some actors in a network cannot reach others, there is the potential of a division of the network. Or, it may indicate that the population we are studying is really composed of more than one sub-populations.
+
+#Declaring Reachability function calculation for each vertex
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+reachability <- function(g, m) {
+  reach_mat = matrix(nrow = vcount(g), ncol = vcount(g))
+  for (i in 1:vcount(g)) {
+    reach_mat[i,] = 0
+    this_node_reach <- subcomponent(g, i, mode = m) # used "i" instead of "(i - 1)"
+    
+    for (j in 1:(length(this_node_reach))){
+      alter = this_node_reach[j]# removed "+ 1"
+      reach_mat[i, alter] = 1
+      }
+    }
+  return(reach_mat)
+  }
+``` 
+#Reachability - IN
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Reach function
+var1_reach_in <- reachability(var1, 'in')
+
+#Mean Reachbility by Vertex
+var1_reach_in_vec <- vector()
+for (i in 1:vcount(var1)) {
+    var1_reach_in_vec[i] <- mean(var1_reach_in[i,])
+}
+
+#Adding to igraph object
+V(var1)$reach_in<-var1_reach_in_vec
+```
+#Descriptive - Reachability - IN
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var1)$reach_in <-mean(var1_reach_in[which(var1_reach_in != Inf)])
+sd(var1_reach_in[which(var1_reach_in != Inf)])
+```
+
+#Reachability - OUT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Reach function
+var1_reach_out <- reachability(var1, 'out')
+
+#Mean Reachbility by Vertex
+var1_reach_out_vec <- vector()
+for (i in 1:vcount(var1)) {
+    var1_reach_out_vec[i] <- mean(var1_reach_out[i,])
+}
+
+#Adding to igraph object
+V(var1)$reach_out<-var1_reach_out_vec
+```
+
+##Descriptive - Reachability  - OUT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+mean(var1_reach_out[which(var1_reach_out != Inf)])
+sd(var1_reach_out[which(var1_reach_out != Inf)])
+```
+
+#Reachbility Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+#Creating a datagrame of measures
+var1_reachability_df <- data.frame(var1_reach_in_vec,var1_reach_out_vec) %>% round(3)
+
+#Adding type
+var1_reachability_df <-cbind(var1_reachability_df, V(var1)$LABEL_COR)
+
+#Adding names
+names(var1_reachability_df) <- c("Reach IN", "Reach OUT","Type")
+
+#Ordering Variables
+var1_reachability_df<-var1_reachability_df[c("Type", "Reach IN", "Reach OUT")]
+```
+## General tabel - DT 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var1_reachability_df, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var1_reachability_df, by=list(var1_reachability_df$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Reach IN(M)", "Reach OUT(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(var1_reachability_df, by=list(var1_reachability_df$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","Reach IN(SD)", "Reach OUT(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+```
+##Merging mean and standart deviation
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total[,c(1)] #Keeping group
+total<-total[,-c(1)] %>% round(3) #Rouding
+total<-cbind(Group,total) #Binding toghter
+
+#Organizing Variabels
+total<-total[c("Group","Reach IN(M)","Reach IN(SD)","Reach OUT(M)","Reach OUT(SD)")]
+```
+##Final table with round - Transitivity
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total, filter = 'top')
+```
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/13_reach_var1.RData") 
+```
+

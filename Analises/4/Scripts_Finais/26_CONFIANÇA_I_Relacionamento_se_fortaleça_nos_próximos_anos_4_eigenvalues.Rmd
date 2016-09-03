@@ -1,0 +1,446 @@
+---
+title: "SNA Eigenvalues 26_CONFIANÇA I) Espera que o relacionamento com este serviço se fortaleça nos próximos anos. (var24)"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 26_CONFIANÇA I) Espera que o relacionamento com este serviço se fortaleça nos próximos anos. (var24)
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/var24_data.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+#suppressMessages(library(car))
+#suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+#suppressMessages(library(miniCRAN))
+#suppressMessages(library(magrittr))
+#suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+#suppressMessages(library(feather))
+#suppressMessages(library(visNetwork))
+#suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#var24<-simplify(var24) #Simplify
+```
+
+
+#Closeness based on Eigenvector and Values
+
+Centrality proportional to the sum of connection centralities - Values of the first eigenvector of the graph matrix.
+
+The eigenvector approach is an effort to find the most central actors (i.e. those with the smallest farness from others) in terms of the "global" or "overall" structure of the network, and to pay less attention to patterns that are more "local." The method used to do this is a factor analysis that identify "dimensions" of the distances among actors. 
+
+The location of each actor with respect to each dimension is called an "eigenvalue," and the collection of such values is called the "eigenvector." 
+
+Usually, the first dimension captures the "global" aspects of distances among actors; second and further dimensions capture more specific and local sub-structures.
+
+##Eigen Centrality - Saving objects
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Eigen_Centrality 
+V(var24)$eigenvector <- eigen_centrality(var24, directed = TRUE, weights=E(var24)$weight) %$% vector %>% round(6)
+var24_eigenvector <- eigen_centrality(var24, directed = TRUE, weights = E(var24)$weight) %$% vector %>% round(6)
+#Eigenvalue Calculated Eigenvector
+var24_eigenvector_value <- eigen_centrality(var24, directed = TRUE, weights = E(var24)$weight) %$% value %>% round(6) # The eigenvalue corresponding to the calculated eigenvector, i.e. the centrality scores.
+```
+##Eigen Centrality Descriptive
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var24_eigenvector)
+sd(var24_eigenvector)
+```
+##Eigenvalue Calculated Eigenvector
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var24_eigenvector_value
+```
+
+#Centralization EigenVector - How central is the most central node in the network in relation to all other nodes?
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var24)$var24_centr_eigen <- centr_eigen(var24, directed = T)$vector
+var24_centr_eigen <-centr_eigen(var24, directed = T)$vector
+```
+##Centralization
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+centr_eigen(var24, directed = T)$centralization
+```
+##Theoretical Max
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+centr_eigen(var24, directed = T)$theoretical_max
+```
+#Eigenvector Centrality Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Getting  Measures
+#Eigen_Centrality 
+var24_eigenvector <- eigen_centrality(var24, directed = TRUE) %$% vector %>% round(3)
+var24_eigenvector_w <- eigen_centrality(var24, directed = TRUE, weights = E(var24)$weight) %$% vector %>% round(3) 
+var24_centr_eigen <-centr_eigen(var24, directed = T)$vector
+
+#Creating a datagrame of measures
+var24_df_eigenvector <- data.frame(var24_eigenvector,
+var24_eigenvector_w,
+var24_centr_eigen) %>% round(3)
+
+#Adding type
+var24_df_eigenvector <-cbind(var24_df_eigenvector, V(var24)$LABEL_COR)
+
+#Adding names
+names(var24_df_eigenvector) <- c("Eigenvector", "Eigenvector Weighted", "Centralization Eigenvector","Type")
+
+#Ordering Variables
+var24_df_eigenvector<-var24_df_eigenvector[c("Type","Eigenvector", "Eigenvector Weighted", "Centralization Eigenvector")]
+```
+## General tabel - DT Eigenvector
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var24_df_eigenvector, filter = 'top')
+```
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var24_df_eigenvector, by=list(var24_df_eigenvector$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Eigenvector(M)", "Eigenvector Weighted(M)", "Centralization Eigenvector(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(var24_df_eigenvector, by=list(var24_df_eigenvector$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","Eigenvector(SD)", "Eigenvector Weighted(SD)", "Centralization Eigenvector(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+```
+##Merging mean and standart deviation
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(3) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Eigenvector(M)","Eigenvector(SD)", "Eigenvector Weighted(M)", "Eigenvector Weighted(SD)", "Centralization Eigenvector(M)", "Centralization Eigenvector(SD)")]
+```
+##Final table with round - Eigenvector
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Eigenvector Centrality Measures Dinamic Table (Natureza)
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Getting  Measures
+#Eigen_Centrality 
+var24_eigenvector <- eigen_centrality(var24, directed = TRUE) %$% vector %>% round(3)
+var24_eigenvector_w <- eigen_centrality(var24, directed = TRUE, weights = E(var24)$weight) %$% vector %>% round(3) 
+var24_centr_eigen <-centr_eigen(var24, directed = T)$vector
+
+#Creating a datagrame of measures
+var24_df_eigenvector <- data.frame(var24_eigenvector,
+var24_eigenvector_w,
+var24_centr_eigen) %>% round(3)
+
+#Adding type
+var24_df_eigenvector <-cbind(var24_df_eigenvector, V(var24)$TIPO1)
+
+#Adding names
+names(var24_df_eigenvector) <- c("Eigenvector", "Eigenvector Weighted", "Centralization Eigenvector","Type")
+
+#Ordering Variables
+var24_df_eigenvector<-var24_df_eigenvector[c("Type","Eigenvector", "Eigenvector Weighted", "Centralization Eigenvector")]
+```
+## General tabel - DT Eigenvector
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var24_df_eigenvector, filter = 'top')
+```
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var24_df_eigenvector, by=list(var24_df_eigenvector$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Eigenvector(M)", "Eigenvector Weighted(M)", "Centralization Eigenvector(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(var24_df_eigenvector, by=list(var24_df_eigenvector$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","Eigenvector(SD)", "Eigenvector Weighted(SD)", "Centralization Eigenvector(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+```
+##Merging mean and standart deviation
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(3) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Eigenvector(M)","Eigenvector(SD)", "Eigenvector Weighted(M)", "Eigenvector Weighted(SD)", "Centralization Eigenvector(M)", "Centralization Eigenvector(SD)")]
+```
+##Final table with round - Eigenvector
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Eigenvector Centrality Measures Dinamic Table (Setor)
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Getting  Measures
+#Eigen_Centrality 
+var24_eigenvector <- eigen_centrality(var24, directed = TRUE) %$% vector %>% round(3)
+var24_eigenvector_w <- eigen_centrality(var24, directed = TRUE, weights = E(var24)$weight) %$% vector %>% round(3) 
+var24_centr_eigen <-centr_eigen(var24, directed = T)$vector
+
+#Creating a datagrame of measures
+var24_df_eigenvector <- data.frame(var24_eigenvector,
+var24_eigenvector_w,
+var24_centr_eigen) %>% round(3)
+
+#Adding type
+var24_df_eigenvector <-cbind(var24_df_eigenvector, V(var24)$TIPO2)
+
+#Adding names
+names(var24_df_eigenvector) <- c("Eigenvector", "Eigenvector Weighted", "Centralization Eigenvector","Type")
+
+#Ordering Variables
+var24_df_eigenvector<-var24_df_eigenvector[c("Type","Eigenvector", "Eigenvector Weighted", "Centralization Eigenvector")]
+```
+## General tabel - DT Eigenvector
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var24_df_eigenvector, filter = 'top')
+```
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var24_df_eigenvector, by=list(var24_df_eigenvector$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Eigenvector(M)", "Eigenvector Weighted(M)", "Centralization Eigenvector(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(var24_df_eigenvector, by=list(var24_df_eigenvector$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","Eigenvector(SD)", "Eigenvector Weighted(SD)", "Centralization Eigenvector(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+```
+##Merging mean and standart deviation
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(3) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Eigenvector(M)","Eigenvector(SD)", "Eigenvector Weighted(M)", "Eigenvector Weighted(SD)", "Centralization Eigenvector(M)", "Centralization Eigenvector(SD)")]
+```
+##Final table with round - Eigenvector
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Eigenvector Centrality measures 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+set.seed(123)
+#Plotting based only on eigenvector measures 
+edge.start <- ends(var24, es=E(var24), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var24))
+maxC <- rep(Inf, vcount(var24))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var24, niter=100000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var24)$weight)
+
+#Plotting
+plot(var24, 
+     layout=co,
+     edge.color=V(var24)$color[edge.start],
+     edge.arrow.size=(eigen_centrality(var24, directed =TRUE, weights = E(var24)$weight)$vector),
+     edge.width=E(var24)$weight/mean(E(var24)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var24)$color,
+     vertex.size=(eigen_centrality(var24, directed =TRUE, weights = E(var24)$weight)$vector+1)*20,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var24,"LABEL_COR"),
+     vertex.label.cex=sqrt((eigen_centrality(var24)$vector)+1)/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var24)$LABEL_COR
+b<-V(var24)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+    title("Eigenvector Centrality Measure - 26_CONFIANÇA I) Espera que o relacionamento com este serviço se fortaleça nos próximos anos. (var24)", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = 
+      sprintf("Median Eigenvector: %.2f",
+      median(eigen_centrality(var24)$vector)
+             )
+       )
+```
+
+#Network Plotting Based On Centralization Eigenvector
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+set.seed(123)
+
+#Get Variable
+V(var24)$var24_color_degree<-round(centr_eigen(var24, directed = T)$vector,6)
+
+#Creating brewer pallette
+vertex_var24_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var24)$var24_color_degree)), "Spectral"))(
+            length(unique(V(var24)$var24_color_degree)))
+
+#Saving as Vertex properties 
+V(var24)$vertex_var24_color_degree<-
+  vertex_var24_color_degree[as.numeric(
+  cut(V(var24)$var24_color_degree,
+      breaks=length(unique(V(var24)$var24_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var24, es=E(var24), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var24))
+maxC <- rep(Inf, vcount(var24))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var24, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var24)$weight)
+
+#PLotting
+plot(var24, 
+     layout=co,
+     edge.color=V(var24)$vertex_var24_color_degree[edge.start],
+     edge.arrow.size=closeness(var24, weights = E(var24)$var24, mode="in"),
+     edge.width=E(var24)$weight/mean(E(var24)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var24)$vertex_var24_color_degree,
+     vertex.size=(centr_eigen(var24, directed = T)$vector)*25,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var24,"LABEL_COR"),
+     vertex.label.cex=(centr_eigen(var24, directed = T)$vector + 1)/5,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var24)$var24_color_degree
+b<-V(var24)$vertex_var24_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network EigenVector - 26_CONFIANÇA I) Espera que o relacionamento com este serviço se fortaleça nos próximos anos. (var24)", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels =
+      sprintf("Median Eigenvector:%.0f\nSDEigenvector: %.0f",
+      mean(centr_eigen(var24, directed = T)$vector), 
+      sd(centr_eigen(var24, directed = T)$vector)
+             )
+       )
+```
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/var24_data.RData")
+```
+

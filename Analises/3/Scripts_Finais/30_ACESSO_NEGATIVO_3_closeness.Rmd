@@ -1,0 +1,1000 @@
+---
+title: "SNA Closeness 30_ACESSO_NEGATIVO"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 30_ACESSO_NEGATIVO
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/acesso_negativo_data.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+#suppressMessages(library(car))
+#suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+#suppressMessages(library(miniCRAN))
+#suppressMessages(library(magrittr))
+#suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+#suppressMessages(library(feather))
+#suppressMessages(library(visNetwork))
+#suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#acesso_negativo<-simplify(acesso_negativo) #Simplify
+```
+
+#Closeness - centrality based on distance to others in the graph 
+
+*How close an actor to all the other actors in network?*
+
+High closeness centrality - short communication path to others, minimal number of steps to reach others.
+
+Answers the “Kevin Bacon” question:
+
+*How many steps are required to access every other vertex from a given vertex?*
+
+One practical implication of this metric: it helps you gauge how information might spread within your network, and who might be the best people to leverage if you need to make sure information gets around. Link here: <http://www.tc.umn.edu/~alink/R-social-network-analysis.html>
+
+Closeness centrality can be defined as a measure of how far other nodes are from the node in question. Nodes with high closeness centrality are likely to be relatively efficient in receiving or transmitting information to/from distant parts of the social network.
+
+Scores may be interpreted as arising from a reciprocal process in which the centrality of each actor is proportional to the sum of the centralities of those actors to whom he or she is connected. 
+
+In general, vertices with high eigenvector centralities are those which are connected to many other vertices which are, in turn, connected to many others (and so on). (The perceptive may realize that this implies that the largest values will be obtained by individuals in large cliques (or high-density substructures)
+
+##Closeness Non-normalized
+
+###Saving to Igraph object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(acesso_negativo)$incloseness <- closeness(acesso_negativo, mode = "in", weights = E(acesso_negativo)$acesso_negativo) %>% round(6)
+V(acesso_negativo)$outcloseness <- closeness(acesso_negativo, mode = "out", weights = E(acesso_negativo)$acesso_negativo) %>% round(6)
+V(acesso_negativo)$totalcloseness <- closeness(acesso_negativo, mode = "total", weights = E(acesso_negativo)$acesso_negativo) %>% round(4)
+```
+
+###Saving to Environment
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+acesso_negativo_incloseness<- closeness(acesso_negativo, mode = "in", weights = E(acesso_negativo)$acesso_negativo) %>% round(6)
+acesso_negativo_outcloseness<- closeness(acesso_negativo, mode = "out", weights = E(acesso_negativo)$acesso_negativo) %>% round(6)
+acesso_negativo_totalcloseness<- closeness(acesso_negativo, mode = "total", weights = E(acesso_negativo)$acesso_negativo) %>% round(6)
+```
+
+##Closeness Non-normalized - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(acesso_negativo_incloseness)
+sd(acesso_negativo_incloseness)
+```
+
+###Network Plotting Based On Non-normalized Closeness - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(acesso_negativo)$incloseness<-closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="in")
+
+#Get Variable
+V(acesso_negativo)$acesso_negativo_color_degree<-round(V(acesso_negativo)$incloseness,6)
+
+#Creating brewer pallette
+vertex_acesso_negativo_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(acesso_negativo)$acesso_negativo_color_degree)), "RdBu"))(
+            length(unique(V(acesso_negativo)$acesso_negativo_color_degree)))
+
+#Saving as Vertex properties 
+V(acesso_negativo)$vertex_acesso_negativo_color_degree<-
+  vertex_acesso_negativo_color_degree[as.numeric(
+  cut(V(acesso_negativo)$acesso_negativo_color_degree,
+      breaks=length(unique(V(acesso_negativo)$acesso_negativo_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso_negativo, es=E(acesso_negativo), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso_negativo))
+maxC <- rep(Inf, vcount(acesso_negativo))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso_negativo, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(acesso_negativo)$weight)
+
+
+#PLotting
+plot(acesso_negativo, 
+     layout=co,
+     edge.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree[edge.start],
+     edge.arrow.size=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="in"),
+     edge.width=E(acesso_negativo)$weight/mean(E(acesso_negativo)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree,
+     vertex.size=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="in")*10^5,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso_negativo,"LABEL_COR"),
+     vertex.label.cex=(closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="in")+10^-5)*2000,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(acesso_negativo)$acesso_negativo_color_degree
+b<-V(acesso_negativo)$vertex_acesso_negativo_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized and Colored In - 30_ACESSO_NEGATIVO", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median In Closennes:%.4f\nSD In Closennes: %.5f",
+             median(closeness(acesso_negativo, mode="in", weights = E(acesso_negativo)$acesso_negativo)), 
+             sd(closeness(acesso_negativo, mode="in", weights = E(acesso_negativo)$acesso_negativo))
+             )
+       )
+```
+
+##Closeness Non-normalized - OUT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(acesso_negativo_outcloseness)
+sd(acesso_negativo_outcloseness)
+```
+
+
+###Network Plotting Based On Non-normalized Closeness - OUT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(acesso_negativo)$outcloseness<-closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="out")
+
+#Get Variable
+V(acesso_negativo)$acesso_negativo_color_degree<-round(V(acesso_negativo)$outcloseness,6)
+
+#Creating brewer pallette
+vertex_acesso_negativo_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(acesso_negativo)$acesso_negativo_color_degree)), "RdBu"))(
+            length(unique(V(acesso_negativo)$acesso_negativo_color_degree)))
+
+#Saving as Vertex properties 
+V(acesso_negativo)$vertex_acesso_negativo_color_degree<-
+  vertex_acesso_negativo_color_degree[as.numeric(
+  cut(V(acesso_negativo)$acesso_negativo_color_degree,
+      breaks=length(unique(V(acesso_negativo)$acesso_negativo_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso_negativo, es=E(acesso_negativo), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso_negativo))
+maxC <- rep(Inf, vcount(acesso_negativo))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso_negativo, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(acesso_negativo)$weight)
+
+
+#PLotting
+plot(acesso_negativo, 
+     layout=co,
+     edge.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree[edge.start],
+     edge.arrow.size=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="out"),
+     edge.width=E(acesso_negativo)$weight/2*mean(E(acesso_negativo)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree,
+     vertex.size=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="out")*10^4,
+     vertex.frame.color="white",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso_negativo,"LABEL_COR"),
+     vertex.label.cex=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="out")*200,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(acesso_negativo)$acesso_negativo_color_degree
+b<-V(acesso_negativo)$vertex_acesso_negativo_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized and Colored OUT - 30_ACESSO_NEGATIVO", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median OUT Closennes:%.4f\nSD OUT Closennes: %.5f",
+             median(closeness(acesso_negativo, mode="out", weights = E(acesso_negativo)$acesso_negativo)), 
+             sd(closeness(acesso_negativo, mode="out", weights = E(acesso_negativo)$acesso_negativo))
+             )
+       )
+```
+
+##Closeness Non-normalized - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(acesso_negativo_totalcloseness)
+sd(acesso_negativo_totalcloseness)
+```
+
+###Network Plotting Based On Non-normalized Closeness - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(acesso_negativo)$allcloseness<-closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="all")
+
+#Get Variable
+V(acesso_negativo)$acesso_negativo_color_degree<-round(V(acesso_negativo)$allcloseness,6)
+
+#Creating brewer pallette
+vertex_acesso_negativo_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(acesso_negativo)$acesso_negativo_color_degree)), "RdBu"))(
+            length(unique(V(acesso_negativo)$acesso_negativo_color_degree)))
+
+#Saving as Vertex properties 
+V(acesso_negativo)$vertex_acesso_negativo_color_degree<-
+  vertex_acesso_negativo_color_degree[as.numeric(
+  cut(V(acesso_negativo)$acesso_negativo_color_degree,
+      breaks=length(unique(V(acesso_negativo)$acesso_negativo_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso_negativo, es=E(acesso_negativo), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso_negativo))
+maxC <- rep(Inf, vcount(acesso_negativo))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso_negativo, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(acesso_negativo)$weight)
+
+
+#PLotting
+plot(acesso_negativo, 
+     layout=co,
+     edge.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree[edge.start],
+     edge.arrow.size=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="all"),
+     edge.width=E(acesso_negativo)$weight/2*mean(E(acesso_negativo)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree,
+     vertex.size=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="all")*10^4,
+     vertex.frame.color="white",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso_negativo,"LABEL_COR"),
+     vertex.label.cex=(closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="all")+0.00001)*200,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(acesso_negativo)$acesso_negativo_color_degree
+b<-V(acesso_negativo)$vertex_acesso_negativo_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized and Colored all - 30_ACESSO_NEGATIVO", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median all Closennes:%.4f\nSD all Closennes: %.5f",
+             median(closeness(acesso_negativo, mode="all", weights = E(acesso_negativo)$acesso_negativo)), 
+             sd(closeness(acesso_negativo, mode="all", weights = E(acesso_negativo)$acesso_negativo))
+             )
+       )
+```
+
+##Closeness Normalized 
+
+###Saving to Igraph object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(acesso_negativo)$incloseness_n <- closeness(acesso_negativo, mode = "in",, weights = E(acesso_negativo)$acesso_negativo, normalized = T) %>% round(10)
+V(acesso_negativo)$outcloseness_n <- closeness(acesso_negativo, mode = "out", normalized = T, weights = E(acesso_negativo)$acesso_negativo) %>% round(6)
+V(acesso_negativo)$totalcloseness_n <- closeness(acesso_negativo, mode = "total", normalized = T, weights = E(acesso_negativo)$acesso_negativo) %>% round(6)
+```
+
+###Saving to Environment
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+acesso_negativo_incloseness_n<- closeness(acesso_negativo, mode = "in", normalized = T, weights = E(acesso_negativo)$acesso_negativo) %>% round(6)
+acesso_negativo_outcloseness_n<- closeness(acesso_negativo, mode = "out", normalized = T, weights = E(acesso_negativo)$acesso_negativo) %>% round(6)
+acesso_negativo_totalcloseness_n<- closeness(acesso_negativo, mode = "total", normalized = T, weights = E(acesso_negativo)$acesso_negativo) %>% round(6)
+```
+
+###Closeness Normalized  - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(acesso_negativo_incloseness_n)
+sd(acesso_negativo_incloseness_n)
+```
+
+##Network Plotting Based On Normalized Closeness - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(acesso_negativo)$incloseness_n<-closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="in", normalized = T)
+
+#Get Variable
+V(acesso_negativo)$acesso_negativo_color_degree<-round(V(acesso_negativo)$incloseness_n,6)
+
+#Creating brewer pallette
+vertex_acesso_negativo_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(acesso_negativo)$acesso_negativo_color_degree)), "RdBu"))(
+            length(unique(V(acesso_negativo)$acesso_negativo_color_degree)))
+
+#Saving as Vertex properties 
+V(acesso_negativo)$vertex_acesso_negativo_color_degree<-
+  vertex_acesso_negativo_color_degree[as.numeric(
+  cut(V(acesso_negativo)$acesso_negativo_color_degree,
+      breaks=length(unique(V(acesso_negativo)$acesso_negativo_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso_negativo, es=E(acesso_negativo), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso_negativo))
+maxC <- rep(Inf, vcount(acesso_negativo))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso_negativo, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(acesso_negativo)$weight)
+
+
+#PLotting
+plot(acesso_negativo, 
+     layout=co,
+     edge.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree[edge.start],
+     edge.arrow.size=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="in",normalized = T),
+     edge.width=E(acesso_negativo)$weight/10*mean(E(acesso_negativo)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree,
+     vertex.size=(closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="in",normalized = T))*1000,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso_negativo,"LABEL_COR"),
+     vertex.label.cex=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="in",normalized = T)*10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(acesso_negativo)$acesso_negativo_color_degree
+b<-V(acesso_negativo)$vertex_acesso_negativo_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized Normalized In - 30_ACESSO_NEGATIVO", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median In Closennes:%.4f\nSD In Closennes: %.5f",
+             median(closeness(acesso_negativo, mode="in", weights = E(acesso_negativo)$acesso_negativo, normalized = T)), 
+             sd(closeness(acesso_negativo, mode="in", weights = E(acesso_negativo)$acesso_negativo, normalized = T))
+             )
+       )
+```
+###Closeness Normalized  - OUT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(acesso_negativo_outcloseness_n)
+sd(acesso_negativo_outcloseness_n)
+```
+
+##Network Plotting Based On Normalized Closeness - OUT
+
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(acesso_negativo)$outcloseness_n<-closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="out", normalized = T)
+
+#Get Variable
+V(acesso_negativo)$acesso_negativo_color_degree<-round(V(acesso_negativo)$outcloseness_n,6)
+
+#Creating brewer pallette
+vertex_acesso_negativo_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(acesso_negativo)$acesso_negativo_color_degree)), "RdBu"))(
+            length(unique(V(acesso_negativo)$acesso_negativo_color_degree)))
+
+#Saving as Vertex properties 
+V(acesso_negativo)$vertex_acesso_negativo_color_degree<-
+  vertex_acesso_negativo_color_degree[as.numeric(
+  cut(V(acesso_negativo)$acesso_negativo_color_degree,
+      breaks=length(unique(V(acesso_negativo)$acesso_negativo_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso_negativo, es=E(acesso_negativo), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso_negativo))
+maxC <- rep(Inf, vcount(acesso_negativo))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso_negativo, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(acesso_negativo)$weight)
+
+
+#PLotting
+plot(acesso_negativo, 
+     layout=co,
+     edge.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree[edge.start],
+     edge.arrow.size=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="out",normalized = T),
+     edge.width=E(acesso_negativo)$weight/10*mean(E(acesso_negativo)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree,
+     vertex.size=(closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="out",normalized = T))*100,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso_negativo,"LABEL_COR"),
+     vertex.label.cex=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="out",normalized = T)*1.5,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(acesso_negativo)$acesso_negativo_color_degree
+b<-V(acesso_negativo)$vertex_acesso_negativo_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized Normalized OUT - 30_ACESSO_NEGATIVO", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median OUT Closennes:%.4f\nSD OUT Closennes: %.5f",
+             median(closeness(acesso_negativo, mode="out", weights = E(acesso_negativo)$acesso_negativo, normalized = T)), 
+             sd(closeness(acesso_negativo, mode="out", weights = E(acesso_negativo)$acesso_negativo, normalized = T))
+             )
+       )
+```
+
+###Closeness Normalized - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(acesso_negativo_totalcloseness_n)
+sd(acesso_negativo_totalcloseness_n)
+```
+
+##Network Plotting Based On Normalized Closeness - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(acesso_negativo)$allcloseness_n<-closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="all", normalized = T)
+
+#Get Variable
+V(acesso_negativo)$acesso_negativo_color_degree<-round(V(acesso_negativo)$allcloseness_n,6)
+
+#Creating brewer pallette
+vertex_acesso_negativo_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(acesso_negativo)$acesso_negativo_color_degree)), "RdBu"))(
+            length(unique(V(acesso_negativo)$acesso_negativo_color_degree)))
+
+#Saving as Vertex properties 
+V(acesso_negativo)$vertex_acesso_negativo_color_degree<-
+  vertex_acesso_negativo_color_degree[as.numeric(
+  cut(V(acesso_negativo)$acesso_negativo_color_degree,
+      breaks=length(unique(V(acesso_negativo)$acesso_negativo_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso_negativo, es=E(acesso_negativo), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso_negativo))
+maxC <- rep(Inf, vcount(acesso_negativo))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso_negativo, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(acesso_negativo)$weight)
+
+
+#PLotting
+plot(acesso_negativo, 
+     layout=co,
+     edge.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree[edge.start],
+     edge.arrow.size=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="all",normalized = T),
+     edge.width=E(acesso_negativo)$weight/10*mean(E(acesso_negativo)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree,
+     vertex.size=(closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="all",normalized = T))*100,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso_negativo,"LABEL_COR"),
+     vertex.label.cex=closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode="all",normalized = T)*1.5,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(acesso_negativo)$acesso_negativo_color_degree
+b<-V(acesso_negativo)$vertex_acesso_negativo_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized Normalized ALL - 30_ACESSO_NEGATIVO", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median ALL Closennes:%.4f\nSD ALL Closennes: %.5f",
+             median(closeness(acesso_negativo, mode="all", weights = E(acesso_negativo)$acesso_negativo, normalized = T)), 
+             sd(closeness(acesso_negativo, mode="all", weights = E(acesso_negativo)$acesso_negativo, normalized = T))
+             )
+       )
+```
+
+##Closeness Normalized 
+
+###Saving to Igraph object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(acesso_negativo)$incloseness_n <- closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode = "in", normalized = T) %>% round(6)
+V(acesso_negativo)$outcloseness_n <- closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode = "out", normalized = T) %>% round(6)
+V(acesso_negativo)$totalcloseness_n <- closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode = "total", normalized = T) %>% round(6)
+```
+
+##Centralization Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(acesso_negativo)$acesso_negativo_centr_closeness<- centralization.closeness(acesso_negativo)$res
+acesso_negativo_centr_closeness<- centralization.closeness(acesso_negativo)$res
+acesso_negativo_centr_closeness_all<- centralization.closeness(acesso_negativo)
+```
+
+###Centralization
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+acesso_negativo_centr_closeness_all$centralization
+```
+
+###Theoretical Max
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+acesso_negativo_centr_closeness_all$theoretical_max
+```
+
+##Network Plotting Based On Centralization Closeness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(acesso_negativo)$acesso_negativo_centr_closeness<- centralization.closeness(acesso_negativo)$res
+
+#Get Variable
+V(acesso_negativo)$acesso_negativo_color_degree<-round(V(acesso_negativo)$acesso_negativo_centr_closeness,6)
+
+#Creating brewer pallette
+vertex_acesso_negativo_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(acesso_negativo)$acesso_negativo_color_degree)), "Spectral"))(
+            length(unique(V(acesso_negativo)$acesso_negativo_color_degree)))
+
+#Saving as Vertex properties 
+V(acesso_negativo)$vertex_acesso_negativo_color_degree<-
+  vertex_acesso_negativo_color_degree[as.numeric(
+  cut(V(acesso_negativo)$acesso_negativo_color_degree,
+      breaks=length(unique(V(acesso_negativo)$acesso_negativo_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso_negativo, es=E(acesso_negativo), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso_negativo))
+maxC <- rep(Inf, vcount(acesso_negativo))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso_negativo, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(acesso_negativo)$weight)
+
+
+#PLotting
+plot(acesso_negativo, 
+     layout=co,
+     edge.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree[edge.start],
+     edge.arrow.size=centralization.closeness(acesso_negativo)$res,
+     edge.width=E(acesso_negativo)$weight/10*mean(E(acesso_negativo)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(acesso_negativo)$vertex_acesso_negativo_color_degree,
+     vertex.size=centralization.closeness(acesso_negativo)$res*100,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso_negativo,"LABEL_COR"),
+     vertex.label.cex=centralization.closeness(acesso_negativo)$res,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(acesso_negativo)$acesso_negativo_color_degree
+b<-V(acesso_negativo)$vertex_acesso_negativo_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Centralization Closeness - 30_ACESSO_NEGATIVO", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median Centralization Closeness:%.4f\nSD Centralization Closeness: %.5f",
+             median(centralization.closeness(acesso_negativo)$res), 
+             sd(centralization.closeness(acesso_negativo)$res)
+             )
+       )
+```
+
+#Closeness Dinamic Table
+##Getting Closeness Measures
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+acesso_negativo_incloseness<- closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode = "in") %>% round(6)
+acesso_negativo_outcloseness<- closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode = "out") %>% round(6)
+acesso_negativo_totalcloseness<- closeness(acesso_negativo, weights = E(acesso_negativo)$acesso_negativo, mode = "total") %>% round(6)
+acesso_negativo_incloseness_n<- closeness(acesso_negativo,weights = E(acesso_negativo)$acesso_negativo, mode = "in", normalized = T) %>% round(6)
+acesso_negativo_outcloseness_n<- closeness(acesso_negativo,weights = E(acesso_negativo)$acesso_negativo, mode = "out", normalized = T) %>% round(6)
+acesso_negativo_totalcloseness_n<- closeness(acesso_negativo,weights = E(acesso_negativo)$acesso_negativo, mode = "total", normalized = T) %>% round(6)
+acesso_negativo_centr_closeness <- centralization.closeness(acesso_negativo)$res %>% round(6)
+```
+
+##Creating a datagrame of measures
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+acesso_negativo_df_closseness <- data.frame(
+acesso_negativo_incloseness,
+acesso_negativo_outcloseness,
+acesso_negativo_totalcloseness,
+acesso_negativo_incloseness_n,
+acesso_negativo_outcloseness_n,
+acesso_negativo_totalcloseness_n,
+acesso_negativo_centr_closeness) %>% round(6)
+
+#Adding type
+acesso_negativo_df_closseness <-cbind(acesso_negativo_df_closseness, V(acesso_negativo)$LABEL_COR)
+
+#Adding names
+names(acesso_negativo_df_closseness) <- c("In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized", "Total Closeness Normalized","Centralization Closeness","Type")
+
+#Ordering Variables
+acesso_negativo_df_closseness<-acesso_negativo_df_closseness[c("Type","In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized","Total Closeness Normalized", "Centralization Closeness")]
+```
+
+##General tabel - DT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(acesso_negativo_df_closseness, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(acesso_negativo_df_closseness, by=list(acesso_negativo_df_closseness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","In Closeness(M)", "Out Closeness(M)", "Total Closeness(M)","In Closeness Normalized(M)", "Out Closeness Normalized(M)", "Total Closeness Normalized(M)","Centralization Closeness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(acesso_negativo_df_closseness, by=list(acesso_negativo_df_closseness$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","In Closeness(SD)", "Out Closeness(SD)", "Total Closeness(SD)","In Closeness Normalized(SD)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(SD)", "Centralization Closeness(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+
+#Merging mean and standart deviation
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Closeness(M)", "In Closeness(SD)", "Out Closeness(M)", "Out Closeness(SD)", "Total Closeness(M)","Total Closeness(SD)","In Closeness Normalized(M)", "In Closeness Normalized(SD)", "Out Closeness Normalized(M)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(M)","Total Closeness Normalized(SD)", "Centralization Closeness(M)","Centralization Closeness(SD)")]
+```
+
+##Plotting final table with round for Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a datagrame of measures (Natureza Governamental)
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+acesso_negativo_df_closseness <- data.frame(
+acesso_negativo_incloseness,
+acesso_negativo_outcloseness,
+acesso_negativo_totalcloseness,
+acesso_negativo_incloseness_n,
+acesso_negativo_outcloseness_n,
+acesso_negativo_totalcloseness_n,
+acesso_negativo_centr_closeness) %>% round(6)
+
+#Adding type
+acesso_negativo_df_closseness <-cbind(acesso_negativo_df_closseness, V(acesso_negativo)$TIPO1)
+
+#Adding names
+names(acesso_negativo_df_closseness) <- c("In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized", "Total Closeness Normalized","Centralization Closeness","Type")
+
+#Ordering Variables
+acesso_negativo_df_closseness<-acesso_negativo_df_closseness[c("Type","In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized","Total Closeness Normalized", "Centralization Closeness")]
+```
+
+##General tabel - DT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(acesso_negativo_df_closseness, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(acesso_negativo_df_closseness, by=list(acesso_negativo_df_closseness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","In Closeness(M)", "Out Closeness(M)", "Total Closeness(M)","In Closeness Normalized(M)", "Out Closeness Normalized(M)", "Total Closeness Normalized(M)","Centralization Closeness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(acesso_negativo_df_closseness, by=list(acesso_negativo_df_closseness$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","In Closeness(SD)", "Out Closeness(SD)", "Total Closeness(SD)","In Closeness Normalized(SD)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(SD)", "Centralization Closeness(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+
+#Merging mean and standart deviation
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Closeness(M)", "In Closeness(SD)", "Out Closeness(M)", "Out Closeness(SD)", "Total Closeness(M)","Total Closeness(SD)","In Closeness Normalized(M)", "In Closeness Normalized(SD)", "Out Closeness Normalized(M)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(M)","Total Closeness Normalized(SD)", "Centralization Closeness(M)","Centralization Closeness(SD)")]
+```
+
+##Plotting final table with round for Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a datagrame of measures (Setores)
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+acesso_negativo_df_closseness <- data.frame(
+acesso_negativo_incloseness,
+acesso_negativo_outcloseness,
+acesso_negativo_totalcloseness,
+acesso_negativo_incloseness_n,
+acesso_negativo_outcloseness_n,
+acesso_negativo_totalcloseness_n,
+acesso_negativo_centr_closeness) %>% round(6)
+
+#Adding type
+acesso_negativo_df_closseness <-cbind(acesso_negativo_df_closseness, V(acesso_negativo)$TIPO2)
+
+#Adding names
+names(acesso_negativo_df_closseness) <- c("In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized", "Total Closeness Normalized","Centralization Closeness","Type")
+
+#Ordering Variables
+acesso_negativo_df_closseness<-acesso_negativo_df_closseness[c("Type","In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized","Total Closeness Normalized", "Centralization Closeness")]
+```
+
+##General tabel - DT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(acesso_negativo_df_closseness, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(acesso_negativo_df_closseness, by=list(acesso_negativo_df_closseness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","In Closeness(M)", "Out Closeness(M)", "Total Closeness(M)","In Closeness Normalized(M)", "Out Closeness Normalized(M)", "Total Closeness Normalized(M)","Centralization Closeness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+
+##Aggregating data from previous table - sd
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(acesso_negativo_df_closseness, by=list(acesso_negativo_df_closseness$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","In Closeness(SD)", "Out Closeness(SD)", "Total Closeness(SD)","In Closeness Normalized(SD)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(SD)", "Centralization Closeness(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+
+#Merging mean and standart deviation
+total_table <- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Closeness(M)", "In Closeness(SD)", "Out Closeness(M)", "Out Closeness(SD)", "Total Closeness(M)","Total Closeness(SD)","In Closeness Normalized(M)", "In Closeness Normalized(SD)", "Out Closeness Normalized(M)", "Out Closeness Normalized(SD)", "Total Closeness Normalized(M)","Total Closeness Normalized(SD)", "Centralization Closeness(M)","Centralization Closeness(SD)")]
+```
+
+##Plotting final table with round for Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/acesso_negativo_data.RData")
+```
+

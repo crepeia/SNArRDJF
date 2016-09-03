@@ -1,0 +1,104 @@
+---
+title: "SNA Interactive Plotting 31.CENTRALIDADE_CONFIANÇA"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 31.CENTRALIDADE_CONFIANÇA
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+##Loading objects generated with 1.Principal.Rmd Script - Please run this script only after run 1.Principal.Rmd
+```{r, echo=FALSE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/1.Principal.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+suppressMessages(library(car))
+suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+suppressMessages(library(miniCRAN))
+suppressMessages(library(magrittr))
+suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+suppressMessages(library(feather))
+suppressMessages(library(visNetwork))
+suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+`#########################
+`# Interactive PLotting ##
+`#########################
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Basic Network Interactive Plotting
+##Passing some default info
+### Vertex 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(confianca)$size <- degree(confianca)
+V(confianca)$label <- V(confianca)$V5_LABEL_TIPO_NOME
+V(confianca)$label.cex <- degree(confianca)/100
+V(confianca)$label.color <- "black"
+```
+### Just in case if we wanna change colors
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#V(confianca)$color <- V(confianca)$color # We defined colors in script 1.Principal.Rmd
+```
+### Changing Edges
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+E(confianca)$weight <- E(confianca)$weight
+E(confianca)$width <- E(confianca)$weight
+E(confianca)$color <- "gray"
+```
+### Here we can change other edge parameter
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#E(confianca)[ weight < 0.5 ]$width <- 4
+#E(confianca)[ weight < 0.5 ]$color <- "green"
+#E(confianca)$label <- LETTERS[1:10]
+#E(confianca)$label.cex = seq(1, 2,length.out = 10)
+#E(confianca)$label.color = "black"
+```
+#Interactive Plotting - 31.CENTRALIDADE_CONFIANÇA
+```{r, echo=FALSE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+visIgraph(confianca, physics =TRUE, smooth = TRUE, type = "full", randomSeed = 123) %>%
+  visOptions(width = "100%", height = "90%",
+             highlightNearest = list(enabled = TRUE, degree =1, hover = TRUE),
+             nodesIdSelection = list(enabled = TRUE)) %>%
+  visInteraction(hover = TRUE, navigationButtons = TRUE) %>%
+  visGroups()
+```
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/0_interactive_confianca.RData") 
+```
+

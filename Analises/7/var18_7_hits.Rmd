@@ -1,0 +1,423 @@
+---
+title: "SNA HITS fuull_no_zero_fancy"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# fuull_no_zero_fancy
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/var18_data.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+#suppressMessages(library(car))
+#suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+#suppressMessages(library(miniCRAN))
+#suppressMessages(library(magrittr))
+#suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+#suppressMessages(library(feather))
+#suppressMessages(library(visNetwork))
+#suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#var18<-simplify(var18) #Simplify
+```
+
+
+#Hubs and Authorities (HITS)
+Hyperlink-Induced Topic Search (HITS; also known as hubs and authorities) is a link analysis algorithm that rates Web pages, developed by Jon Kleinberg. 
+
+The idea behind Hubs and Authorities stemmed from a particular insight into the creation of web pages when the Internet was originally forming; that is, certain web pages, known as hubs, served as large directories that were not actually authoritative in the information that they held, but were used as compilations of a broad catalog of information that led users direct to other authoritative pages. In other words, a good hub represented a page that pointed to many other pages, and a good authority represented a page that was linked by many different hubs.(from dirty wikipedia)
+
+The scheme therefore assigns two scores for each page: its authority, which estimates the value of the content of the page, and its hub value, which estimates the value of its links to other pages.
+
+
+We can use the same analogy for citation networks like reviews (hubs) vs original research (authoritative) papers
+
+• Authorities, contain useful information
+
+• Hubs, contains links to authorities
+
+• Good authorities referred by good hubs
+
+• Good hubs point to good authorities
+
+It is possibile to apply this kind of analysis for social network relationships.  
+
+##Hubs - are expected to contain catalogs with a large number of outgoing links; 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Kleinberg’s hub scores
+V(var18)$hub <- hub.score(var18)$vector
+var18_hub<- hub.score(var18)$vector %>% round(4)
+```
+##Hubs Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d=as.data.frame(cbind(V(var18)$LABEL_COR, var18_hub))
+names(d)<-c("Type", "Hub Score")
+datatable(d, filter ="top")
+```
+
+##Hubs Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d=as.data.frame(cbind(V(var18)$TIPO1, var18_hub))
+names(d)<-c("Type", "Hub Score")
+datatable(d, filter ="top")
+```
+
+##Hubs Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d=as.data.frame(cbind(V(var18)$TIPO2, var18_hub))
+names(d)<-c("Type", "Hub Score")
+datatable(d, filter ="top")
+```
+
+##Hubs Stats
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var18_hub)
+sd(var18_hub)
+```
+##Plotting based on Hub Scores 
+```{r}
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var18, es=E(var18), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var18))
+maxC <- rep(Inf, vcount(var18))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var18, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var18)$weight)
+
+#Plotting
+plot(var18, 
+     layout=co,
+     edge.color=V(total)$color[edge.start],
+     edge.arrow.size=(hub.score(var18)$vector+0.001)/100,
+     edge.width=E(var18)$weight/10*mean(E(var18)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var18)$color,
+     vertex.size=20*hub.score(var18)$vector,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var18,"LABEL_COR"),
+     vertex.label.cex=(hub.score(var18)$vector+0.001),
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(total)$LABEL_COR
+b<-V(total)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Hub Sized - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels =    sprintf("Mean Hub Score: %.2f\n SD Hub Score: %.2f",
+     mean(var18_hub),
+     sd(var18_hub)
+             )
+       )
+```
+
+#Authorities - would get many incoming links from hubs, presumably because of their high-quality relevant information.
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Kleinberg’s authority scores
+V(var18)$authority.score<- authority.score(var18)$vector
+var18_auth <- authority.score(var18)$vector %>% round(4)
+```
+
+##Authorities Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d=as.data.frame(cbind(V(var18)$LABEL_COR, var18_auth))
+names(d)<-c("Type", "Authorities Score")
+datatable(d, filter ="top")
+```
+
+##Authorities Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d=as.data.frame(cbind(V(var18)$TIPO1, var18_auth))
+names(d)<-c("Type", "Authorities Score")
+datatable(d, filter ="top")
+```
+
+##Authorities Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d=as.data.frame(cbind(V(var18)$TIPO2, var18_auth))
+names(d)<-c("Type", "Authorities Score")
+datatable(d, filter ="top")
+```
+
+##Authorities Stats
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var18_auth)
+sd(var18_auth)
+```
+##Plotting based only on Authorities Scores
+```{r}
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var18, es=E(var18), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var18))
+maxC <- rep(Inf, vcount(var18))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var18, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var18)$weight)
+
+#Plotting
+plot(var18, 
+     layout=co,
+     edge.color=V(total)$color[edge.start],
+     edge.arrow.size=(authority.score(var18)$vector+0.01)/100,
+     edge.width=E(var18)$weight/10*mean(E(var18)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var18)$color,
+     vertex.size=20*authority.score(var18)$vector,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var18,"LABEL_COR"),
+     vertex.label.cex=(authority.score(var18)$vector+0.01),
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(total)$LABEL_COR
+b<-V(total)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Authorities Scores  Sized - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels =    sprintf("Mean Authorities Scores: %.2f\n SD Authorities Scores: %.2f",
+     mean(var18_auth),
+     sd(var18_auth)
+             )
+       )
+```
+
+#Google PageRank - it is what it is
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#PageRank
+V(var18)$page.rank<-page.rank(var18)$vector
+var18_pr<-page.rank(var18)$vector %>% round(4)
+```
+
+##PageRank Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d=as.data.frame(cbind(V(var18)$LABEL_COR, var18_pr))
+names(d)<-c("Type", "Page Rank")
+datatable(d, filter ="top")
+```
+
+##PageRank Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d=as.data.frame(cbind(V(var18)$TIPO1, var18_pr))
+names(d)<-c("Type", "Page Rank")
+datatable(d, filter ="top")
+```
+
+##PageRank Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d=as.data.frame(cbind(V(var18)$TIPO2, var18_pr))
+names(d)<-c("Type", "Page Rank")
+datatable(d, filter ="top")
+```
+
+##PageRank Stats
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var18_pr)
+sd(var18_pr)
+```
+##Plotting based only on PageRank Scores 
+```{r}
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var18, es=E(var18), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var18))
+maxC <- rep(Inf, vcount(var18))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var18, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var18)$weight)
+
+#Plotting
+plot(var18, 
+     layout=co,
+     edge.color=V(total)$color[edge.start],
+     edge.arrow.size=(page.rank(var18)$vector+0.01)/100,
+     edge.width=E(var18)$weight/10*mean(E(var18)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var18)$color,
+     vertex.size=400*page.rank(var18)$vector,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var18,"LABEL_COR"),
+     vertex.label.cex=15*(page.rank(var18)$vector+0.01),
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(total)$LABEL_COR
+b<-V(total)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Google Page Rank Sized - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels =    sprintf("Mean Page Rank Scores: %.2f\n SD Page Rank Scores: %.2f",
+     mean(var18_pr),
+     sd(var18_pr)
+             ))
+```
+
+#Saving HITS and  Degree
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+# We will plot 6 graphs in 2 rows and 3 columns:
+prPB<-page_rank(var18)$vector
+hPB<-hub.score(var18)$vector
+authPB<-authority.score(var18)$vector
+indegPB<-degree(var18, mode="in")
+outdegPB<-degree(var18, mode="out")
+```
+##Plotting all together 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}  
+op <- par(mfrow = c(2, 3),oma=c(0,0,2,0))
+plot(prPB, hPB, xlab="PageRank", ylab="Hubs", col="blue")
+plot(prPB, authPB, xlab="PageRank", ylab="Authorities", col="blue") 
+plot(hPB, authPB, xlab="Hubs", ylab="Authorities", col="blue") 
+plot(indegPB, outdegPB, xlab="In- degree", ylab="Out- degree", col="blue") 
+plot(indegPB, authPB, xlab="In- degree", ylab="Authorities", col="blue")
+plot(outdegPB, hPB, xlab="Out- degree", ylab="Hubs", col="blue")
+title("Hits by in and out degree - fuull_no_zero_fancy", outer=TRUE)
+par(op)
+```
+
+##Top HITs
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##Create a matrix to output:
+topnamesPB=as.data.frame(cbind(prPB,hPB,authPB,indegPB,outdegPB)) %>% round(4)
+names(topnamesPB) <- c("PageRank","Hubs","Authorities","In- degree","Out- degree")
+```
+##HITS Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(topnamesPB, filter = "top")
+```
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/var18_data.RData")
+```
+
+

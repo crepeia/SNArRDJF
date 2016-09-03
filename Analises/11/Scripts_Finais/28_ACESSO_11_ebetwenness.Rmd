@@ -1,0 +1,218 @@
+---
+title: "SNA Edge Betwenness 28_ACESSO"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 28_ACESSO
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/10_distance_paths_acesso.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+suppressMessages(library(car))
+suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+suppressMessages(library(miniCRAN))
+suppressMessages(library(magrittr))
+suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+suppressMessages(library(feather))
+suppressMessages(library(visNetwork))
+suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#acesso<-simplify(acesso) #Simplify
+```
+
+#Edges Newman-Girvan Edge-Betweenness - Non-Weighted
+Edge betweenness Edge betweenness is equal to the number of shortest paths σst(e) from all vertices to all others that pass through that edge e
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Edge Betweenness
+E(acesso)$edge.betweenness_n<-edge.betweenness(acesso, weights =E(acesso)$equalone)
+acesso_edge.betweenness_n <-edge.betweenness(acesso, weights =E(acesso)$equalone)
+```
+#Edge Betweenness Descriptive
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(acesso_edge.betweenness_n)
+sd(acesso_edge.betweenness_n)
+```
+
+#Edges Newman-Girvan Edge-Betweenness - Weighted
+Edge betweenness Edge betweenness is equal to the number of shortest paths σst(e) from all vertices to all others that pass through that edge e
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Edge Betweenness
+E(acesso)$edge.betweenness<-edge.betweenness(acesso, weights =E(acesso)$acesso)
+acesso_edge.betweenness <-edge.betweenness(acesso, weights =E(acesso)$acesso)
+```
+#Edge Betweenness Descriptive
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(acesso_edge.betweenness)
+sd(acesso_edge.betweenness)
+```
+
+#Betweenness Edge Dinamic Table
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Betweenness Measures Dinamic Table
+#Getting  Measures
+acesso_edge.betweenness_n <-edge.betweenness(acesso, weights =E(acesso)$equalone)
+acesso_edge.betweenness <-edge.betweenness(acesso, weights =E(acesso)$acesso)
+
+#Creating a dataframe of measures
+acesso_df_betweenness <- data.frame(acesso_edge.betweenness_n ,
+acesso_edge.betweenness) %>% round(1)
+
+labels<-attr(E(acesso), "vnames")
+#edgebt<-cbind(round(acesso_edge.betweenness,2),labels)
+
+#Adding type
+acesso_df_betweenness <-cbind(acesso_df_betweenness, labels)
+
+#Adding names
+names(acesso_df_betweenness) <- c("Edge Betweenness", "Edge Betweenness Weighted", "Type")
+
+#Ordering Variables
+acesso_df_betweenness<-acesso_df_betweenness[c("Type","Edge Betweenness", "Edge Betweenness Weighted")]
+```
+## General tabel for Betweenness
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(acesso_df_betweenness, filter = 'top')
+```
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(acesso_df_betweenness, by=list(acesso_df_betweenness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Betweenness(M)", "Betweenness Weighted(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - sd
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_sd <-aggregate(acesso_df_betweenness, by=list(acesso_df_betweenness$Type), FUN=sd, na.rm=TRUE) 
+
+names(aggdata_sd) <- c("Group","Type","Betweenness(SD)", "Betweenness Weighted(SD)")
+
+#Removing Type variable
+aggdata_sd<-aggdata_sd[,-c(2)]
+```
+##Merging mean and standart deviation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table<- merge(aggdata_mean,aggdata_sd,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(1) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Betweenness(M)","Betweenness(SD)","Betweenness Weighted(M)", "Betweenness Weighted(SD)")]
+```
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso, es=E(acesso), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso))
+maxC <- rep(Inf, vcount(acesso))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights =E(acesso)$edge.betweenness)
+
+min(E(acesso)$edge.betweenness)
+#PLotting
+plot(acesso, 
+     layout=co,
+     edge.color=V(acesso)$color[edge.start],
+     edge.arrow.size=E(acesso)$edge.betweenness/10000*mean(E(acesso)$edge.betweenness+1),
+     edge.width=E(acesso)$acesso/10*mean((E(acesso)$acesso+1)),
+     edge.curved = TRUE,
+     vertex.size=log((degree(acesso)+2))*(0.5*mean(degree(acesso))),
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso,"LABEL_COR"),
+     vertex.label.cex=log(degree(acesso)+2)/mean(degree(acesso)),
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(acesso)$LABEL_COR
+b<-V(acesso)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Edge Betweenness Sized - 28_ACESSO", sub = "Source: from authors ", cex = .5)
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean Betweenness : %.2f\n SD Betweenness : %.2f",
+     mean(E(acesso)$edge.betweenness), 
+     sd(E(acesso)$edge.betweenness)
+   ))
+```
+
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/11_ebetweenness_acesso.RData") 
+```
+

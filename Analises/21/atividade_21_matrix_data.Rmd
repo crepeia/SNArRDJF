@@ -1,0 +1,111 @@
+---
+title: "Untitled"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: html_document
+---
+
+
+
+#1.24. Loading objects generated with 1.Principal.Rmd Script - Please run this script only after run 1.Principal.Rmd
+```{r}
+load("~/SNArRDJF/Robject/atividade_data.RData")
+```
+
+##1.25 Reload packages
+```{r packages, message=TRUE, warning=TRUE}
+require(igraph) #load package for social network analysis
+library(dplyr)
+library(RColorBrewer)
+library(car)
+library(xtable)
+library(ggplot2)
+set.seed(123)
+```
+
+
+```{r}
+# Re-generate dataframes for both nodes and edges, now containing
+# calculated network attributes
+node_list <- get.data.frame(atividade, what = "vertices")
+
+#Writing Node CSV 
+write.csv2(node_list, "~/SNArRDJF/Banco Redes R/Networks/node_atividade.csv", fileEncoding = "macintosh")
+
+# Edge List
+edge_list <- get.data.frame(atividade, what = "edges") %>%
+  inner_join(node_list %>% select(name, walktrap.community), by = c("from" = "name")) %>%
+  inner_join(node_list %>% select(name, walktrap.community), by = c("to" = "name")) %>%
+  mutate(group = ifelse(walktrap.community.x == walktrap.community.y, walktrap.community.x, NA) %>% factor())
+
+#Writing Edge List CSV
+write.csv2(edge_list, "~/SNArRDJF/Banco Redes R/Networks/edge_atividade.csv", fileEncoding = "macintosh")
+
+
+# Create a character vector containing every node name
+all_nodes <- sort(node_list$name)
+
+# Adjust the 'to' and 'from' factor levels so they are equal
+# to this complete list of node names
+plot_data <- edge_list %>% mutate(
+        to = factor(to, levels = all_nodes),
+        from = factor(from, levels = all_nodes))
+
+# Create the adjacency matrix plot
+ggplot(plot_data, aes(x = from, y = to, fill = group)) +
+      geom_raster() +
+      theme_bw() +
+      # Because we need the x and y axis to display every node,
+      # not just the nodes that have connections to each other,
+      # make sure that ggplot does not drop unused factor levels
+      scale_x_discrete(drop = FALSE) +
+      scale_y_discrete(drop = FALSE) +
+      theme(
+        # Rotate the x-axis lables so they are legible
+        axis.text.x = element_text(angle = 270, hjust = 0),
+        # Force the plot into a square aspect ratio
+        aspect.ratio = 1,
+        # Hide the legend (optional)
+        legend.position = "none")
+
+
+#Create a character vector of node names sorted by their
+# community membership. Here, I rearrange the node_list
+# table by the "comm" variable, then extract the
+# "name" vector
+name_order <- (node_list %>% arrange(walktrap.community))$name
+
+# Reorder edge_list "from" and "to" factor levels based on
+# this new name_order
+plot_data <- edge_list %>% mutate(
+        to = factor(to, levels = name_order),
+        from = factor(from, levels = name_order))
+
+
+# Create the adjacency matrix plot
+ggplot(plot_data, aes(x = from, y = to, fill = group)) +
+      geom_raster() +
+      theme_bw() +
+      # Because we need the x and y axis to display every node,
+      # not just the nodes that have connections to each other,
+      # make sure that ggplot does not drop unused factor levels
+      scale_x_discrete(drop = FALSE) +
+      scale_y_discrete(drop = FALSE) +
+      theme(
+        # Rotate the x-axis lables so they are legible
+        axis.text.x = element_text(angle = 270, hjust = 0),
+        # Force the plot into a square aspect ratio
+        aspect.ratio = 1,
+        # Hide the legend (optional)
+        legend.position = "none")
+
+# Now run the ggplot code again
+```
+
+#4. Saving objects with new variables and changes
+```{r}
+save.image("~/SNArRDJF/2.SNA.atividade.RData") 
+```
+
+
+

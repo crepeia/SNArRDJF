@@ -1,0 +1,235 @@
+---
+title: "Catch'em all"
+author: "Leonardo Martins"
+date: "24 de julho de 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+Disseminating the code
+
+```{r}
+#Breeding Reports Like Crazy
+library(rmarkdown)
+require(dplyr)
+```
+
+```{r}
+#It only works in Unix (Linux or OSX) - Using Stream Editor from Bash
+x<-"sed -e 's/full_no_zero/x2/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/x2_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var0/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var0_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var1/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var1_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var2/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var2_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var3/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var3_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var4/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var4_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var5/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var5_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var6/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var6_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var7/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var7_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var8/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var8_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var9/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var9_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var10/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var10_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var11/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var11_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var12/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var12_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var13/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var13_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var14/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var14_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var15/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var15_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var16/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var16_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var17/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var17_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var18/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var18_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var19/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var19_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var20/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var20_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var21/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var21_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var22/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var22_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var23/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var23_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var24/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/var24_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/atividade/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/atividade_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/acesso/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/acesso_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/acesso_positivo/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/acesso_positivo_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/acesso_negativo/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/acesso_negativo_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/confianca/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/confianca_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/acessoeconfianca/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/acessoeconfianca_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/total/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd > ~/SNArRDJF/Analises/2/total_2_degree.Rmd" %>% system()
+```
+
+#Breeding Fancy Names Reports Like Crazy
+```{r}
+x<-"sed -e 's/fuull_no_zero_fancy/1.1 - REDE COMPLETA (full_no_zero)/g' ~/SNArRDJF/Analises/2/2_degree_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/1.1_REDE_COMPLETA_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/1.2 - ALGUM RELACIONAMENTO (x2)/g' ~/SNArRDJF/Analises/2/x2_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/1.2_REDE_COMPLETA_ALGUM_RELACIONAMENTO_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/2_RELACIONAMENTO FORMAL (var0)/g' ~/SNArRDJF/Analises/2/var0_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/2_RELACIONAMENTO_FORMAL_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/3_REFERENCIA DE ENVIO (var1)/g' ~/SNArRDJF/Analises/2/var1_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/3_REFERENCIA_DE_ENVIO_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/4_REFERENCIA DE RECEBIMENTO CONTRAREFERENCIA (var2)/g' ~/SNArRDJF/Analises/2/var2_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/4_REFERENCIA_DE_RECEBIMENTO_CONTRAREFERENCIA_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/5_COORDENAÇÃO CONJUNTA DE CASOS (var3)/g' ~/SNArRDJF/Analises/2/var3_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/5_COORDENAÇÃO_CONJUNTA_DE_CASOS_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/6_PROGRAMAS EM CONJUNTO (var4)/g' ~/SNArRDJF/Analises/2/var4_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/6_PROGRAMAS_EM_CONJUNTO_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/7_OFERTA DE TREINAMENTOS CAPACITAÇÕES (var5)/g' ~/SNArRDJF/Analises/2/var5_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/7_OFERTA_DE_TREINAMENTOS_CAPACITAÇÕES_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/8_RECEBER TREINAMENTOS CAPACITAÇÕES (var6)/g' ~/SNArRDJF/Analises/2/var6_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/8_RECEBER_TREINAMENTOS_CAPACITAÇÕES_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/9_ACESSO A) Este serviço mostra-se disponível para realização de ativades em conjunto. (var7)/g' ~/SNArRDJF/Analises/2/var7_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/9_ACESSO_A_realização_de_ativades_em_conjunto_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/10_ACESSO B) O horário de funcionamento deste serviço possibilita a realização de ações em conjunto. (var8)/g' ~/SNArRDJF/Analises/2/var8_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/10_ACESSO_B_realização_de_ações_em_conjunto_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/11_ACESSO C) Este serviço disponibiliza informações sobre suas ativades para o seu serviço. (var9)/g' ~/SNArRDJF/Analises/2/var9_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/11_ACESSO_C_disponibiliza_informações_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/12_ACESSO D) O seu serviço consegue acessar facilmente informações deste serviço. (var10)/g' ~/SNArRDJF/Analises/2/var10_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/12_ACESSO_D_acessar_facilmente_informações_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/13_ACESSO E) Os canais de comunicação com este serviço são suficientes para realização de ações em conjunto. (var11)/g' ~/SNArRDJF/Analises/2/var11_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/13_ACESSO_E_canais_de_comunicação_suficientes_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/14_ACESSO F) Seu serviço tem facilade de entrar em contato com este serviço para realizar ativades em conjunto (var12)./g' ~/SNArRDJF/Analises/2/var12_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/14_ACESSO_F_entrar_em_contato_ara_realizar_ativades_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/15_ACESSO G) O acesso geográfico a este serviço impede a realização de ativades em conjunto. (var13) /g' ~/SNArRDJF/Analises/2/var13_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/15_ACESSO_G_O_acesso_geográfico_impede_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/16_ACESSO H) O custo para acessar este serviço impede a realização de ativades em conjunto. (var14)/g' ~/SNArRDJF/Analises/2/var14_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/16_ACESSO_H_O_custo_para_acessar_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/17_ACESSO I) O tempo gasto para acessar este serviço impede a realização ativades em conjunto. (var15)/g' ~/SNArRDJF/Analises/2/var15_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/17_ACESSO_I_O_tempo_gasto_para_acessar_este_serviço_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/18_CONFIANÇA A) Confia na qualificação profissional da equipe deste serviço.(var16)/g' ~/SNArRDJF/Analises/2/var16_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/18_CONFIANÇA_A_Confia_na_qualificação_profissional_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/19_CONFIANÇA B) Confia na capacade técnica da equipe deste serviço. (var17)/g' ~/SNArRDJF/Analises/2/var17_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/19_CONFIANÇA_B_Confia_na_capacade_técnica_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/20_CONFIANÇA C) Confia nas ações realizadas por este serviço. (var18)/g' ~/SNArRDJF/Analises/2/var18_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/20_CONFIANÇA_C_Confia_nas_ações_realizadas_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/21_CONFIANÇA D) Confia em compartilhar informações internas com este serviço. (var19) /g' ~/SNArRDJF/Analises/2/var19_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/21_CONFIANÇA_D_Confia_em_compartilhar_informações_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/22_CONFIANÇA E) Confia nas informações recebas deste serviço (var20)./g' ~/SNArRDJF/Analises/2/var20_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/22_CONFIANÇA_E_Confia_nas_informações_recebidas_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/23_CONFIANÇA F) Confia em realizar ações conjuntas com este serviço (var21)./g' ~/SNArRDJF/Analises/2/var21_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/23_CONFIANÇA_F_Confia_em_realizar_ações_conjuntas_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/24_CONFIANÇA G) Está satisfeito com as ações desempenhadas por este serviço (var22)./g' ~/SNArRDJF/Analises/2/var22_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/24_CONFIANÇA_G_Está_satisfeito_com_as_ações_desempenhadas_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/25_CONFIANÇA H) Espera que o relacionamento com este serviço continue nos próximos anos (var23)./g' ~/SNArRDJF/Analises/2/var23_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/25_CONFIANÇA_H_Relacionamento_continue_nos_próximos_anos_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/26_CONFIANÇA I) Espera que o relacionamento com este serviço se fortaleça nos próximos anos. (var24)/g' ~/SNArRDJF/Analises/2/var24_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/26_CONFIANÇA_I_Relacionamento_se_fortaleça_nos_próximos_anos_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/27_ATIVIDADE/g' ~/SNArRDJF/Analises/2/atividade_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/27_ATIVIDADE_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/28_ACESSO/g' ~/SNArRDJF/Analises/2/acesso_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/28_ACESSO_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/29_ACESSO_POSITIVO/g' ~/SNArRDJF/Analises/2/acesso_positivo_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/29_ACESSO_POSITIVO_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/30_ACESSO_NEGATIVO/g' ~/SNArRDJF/Analises/2/acesso_negativo_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/30_ACESSO_NEGATIVO_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/31_CONFIANÇA/g' ~/SNArRDJF/Analises/2/confianca_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/31_CONFIANÇA_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/32_ACESSO E CONFIANÇA/g' ~/SNArRDJF/Analises/2/acessoeconfianca_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/32_ACESSO_E_CONFIANÇA_2_degree.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/33_TOTAL/g' ~/SNArRDJF/Analises/2/total_2_degree.Rmd >  ~/SNArRDJF/Analises/2/Scripts_Finais/33_TOTAL_2_degree.Rmd" %>% system()
+```
+
+```{r}
+render("~/SNArRDJF/Analises/2/Scripts_Finais/1.1_REDE_COMPLETA_2_degree.Rmd","all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/1.2_REDE_COMPLETA_ALGUM_RELACIONAMENTO_2_degree.Rmd","all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/2_RELACIONAMENTO_FORMAL_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/3_REFERENCIA_DE_ENVIO_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/4_REFERENCIA_DE_RECEBIMENTO_CONTRAREFERENCIA_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/5_COORDENAÇÃO_CONJUNTA_DE_CASOS_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/6_PROGRAMAS_EM_CONJUNTO_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/7_OFERTA_DE_TREINAMENTOS_CAPACITAÇÕES_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/8_RECEBER_TREINAMENTOS_CAPACITAÇÕES_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/9_ACESSO_A_realização_de_ativades_em_conjunto_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/10_ACESSO_B_realização_de_ações_em_conjunto_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/11_ACESSO_C_disponibiliza_informações_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/12_ACESSO_D_acessar_facilmente_informações_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/13_ACESSO_E_canais_de_comunicação_suficientes_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/14_ACESSO_F_entrar_em_contato_ara_realizar_ativades_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/15_ACESSO_G_O_acesso_geográfico_impede_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/16_ACESSO_H_O_custo_para_acessar_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/17_ACESSO_I_O_tempo_gasto_para_acessar_este_serviço_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/18_CONFIANÇA_A_Confia_na_qualificação_profissional_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/19_CONFIANÇA_B_Confia_na_capacade_técnica_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/20_CONFIANÇA_C_Confia_nas_ações_realizadas_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/21_CONFIANÇA_D_Confia_em_compartilhar_informações_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/22_CONFIANÇA_E_Confia_nas_informações_recebidas_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/23_CONFIANÇA_F_Confia_em_realizar_ações_conjuntas_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/24_CONFIANÇA_G_Está_satisfeito_com_as_ações_desempenhadas_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/25_CONFIANÇA_H_Relacionamento_continue_nos_próximos_anos_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/26_CONFIANÇA_I_Relacionamento_se_fortaleça_nos_próximos_anos_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/27_ATIVIDADE_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/28_ACESSO_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/29_ACESSO_POSITIVO_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/30_ACESSO_NEGATIVO_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/31_CONFIANÇA_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/32_ACESSO_E_CONFIANÇA_2_degree.Rmd" ,"all")
+
+render("~/SNArRDJF/Analises/2/Scripts_Finais/33_TOTAL_2_degree.Rmd" ,"all")
+```
+
+```{r}
+save.image("~/SNArRDJF/Analises/2/2.Cathemall.RData")
+```
+
+

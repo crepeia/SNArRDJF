@@ -1,0 +1,150 @@
+---
+title: "SNA K-Core 30_ACESSO_NEGATIVO"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output: 
+  html_document: 
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# 30_ACESSO_NEGATIVO
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/12_cliques_acesso_negativo.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+suppressMessages(library(car))
+suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+suppressMessages(library(miniCRAN))
+suppressMessages(library(magrittr))
+suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+suppressMessages(library(feather))
+suppressMessages(library(visNetwork))
+suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#acesso_negativo<-simplify(acesso_negativo) #Simplify
+```
+
+
+#K-core
+k-core is a maximal subset of vertices such that each is connected to at least k others in the subset.R has a function wich calculates the coreness for each vertex.The coreness of a vertex is k if it belongs to the k-core but not to the (k+1)-core.
+
+##Finding maximum k-core and pick out it on graph
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+coreness <- graph.coreness(acesso_negativo)
+V(acesso_negativo)$coreness<-graph.coreness(acesso_negativo)
+max_cor <- max(coreness)
+max_cor <- max(coreness)
+```
+##Max Coreness
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+max_cor
+```
+##Heat map for coreness
+```{r}
+#Defining Heat Color
+color_bar <- heat.colors(max_cor) 
+V(acesso_negativo)$color_bar<-color_bar[coreness]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(acesso_negativo, es=E(acesso_negativo), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(acesso_negativo))
+maxC <- rep(Inf, vcount(acesso_negativo))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(acesso_negativo, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(acesso_negativo)$weight)
+
+#Plotting
+plot(acesso_negativo, 
+     layout=co,
+     edge.color=V(acesso_negativo)$color_bar[edge.start],
+     edge.arrow.size=degree(acesso_negativo)/10000,
+     edge.width=E(acesso_negativo)$weight/10*mean(E(acesso_negativo)$weight),
+     edge.curved = TRUE,
+     vertex.color = color_bar[coreness],
+     vertex.size=(degree(acesso_negativo)+10)/5,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(acesso_negativo,"LABEL_COR"),
+     vertex.label.cex=(degree(acesso_negativo)+0.01)/400,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(acesso_negativo)$coreness
+b<-V(acesso_negativo)$color_bar
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Coreness Colored Graph - 30_ACESSO_NEGATIVO", sub = "Source: from authors ", cex = .5)
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels =     sprintf("Mean Coreness: %.2f\nMax Coreness: %.2f",
+     mean(graph.coreness(acesso_negativo)), 
+     max(graph.coreness(acesso_negativo))
+             )
+       )
+```
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/14_kcore_acesso_negativo.RData") 
+```
