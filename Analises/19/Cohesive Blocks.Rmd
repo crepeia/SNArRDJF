@@ -1,0 +1,288 @@
+---
+title: "Untitled"
+author: "Leonardo Martins"
+date: "18 de agosto de 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Loading objects generated with previous script 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/1_intro_full_no_zero.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+suppressMessages(library(car))
+suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+suppressMessages(library(miniCRAN))
+suppressMessages(library(magrittr))
+suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+suppressMessages(library(feather))
+suppressMessages(library(visNetwork))
+suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+full_no_zero<-var14
+full_no_zero<-simplify(full_no_zero) #Simplify
+```
+
+
+
+```{r cars}
+
+n = 100
+p = 1.75/n
+g = sample_gnp(n, p)
+coords = layout_with_fr(full_no_zero)
+plot(full_no_zero, layout=coords, vertex.size = 3, vertex.label=NA)
+```
+
+
+```{r}
+# get the components 
+c = components(full_no_zero)
+
+# connected?
+is_connected(full_no_zero)
+```
+
+
+```{r}
+# number of components
+c$no
+```
+
+```{r}
+table(c$csize)
+```
+
+```{r}
+# membeship of nodes
+c$membership
+```
+
+```{r}
+# get the giant component
+nodes = which(c$membership == which.max(c$csize))
+
+# color in red the nodes in the giant component
+V(full_no_zero)$color = "white"
+V(full_no_zero)[nodes]$color = "red"
+plot(full_no_zero, layout=coords, vertex.size = 3, vertex.label=NA)
+```
+
+```{r}
+n = 100
+p = 4/n
+g = sample_gnp(n, p)
+coords = layout_with_fr(g)
+plot(g, layout=coords, vertex.size = 3, vertex.label=NA)
+```
+
+```{r}
+bc = biconnected_components(full_no_zero)
+
+# number of bicomponents
+bc$no
+```
+
+```{r}
+# print edges of biconnected components
+bc$component_edges
+```
+
+```{r}
+# print nodes of biconnected components
+bc$components
+```
+
+```{r}
+# size of bicomponents
+cl = bc$components
+size = sapply(cl, length)
+length(size)
+```
+
+```{r}
+table(size) 
+```
+
+```{r}
+# highlight the largest bi-component
+giant = cl[[which.max(size)]]
+V(full_no_zero)$color  = "white"
+V(full_no_zero)[giant]$color = "red"
+plot(full_no_zero, layout=coords, vertex.label=NA, vertex.size=5)
+```
+
+```{r}
+#Cohesive blocks (k-connected components)
+n = 100
+p = 6/n
+g = sample_gnp(n, p)
+coords = layout_with_fr(g)
+plot(g, layout=coords, vertex.size = 3, vertex.label=NA)
+```
+
+```{r}
+# This is computationally heavy
+b = cohesive_blocks(as.undirected(full_no_zero))
+
+# print hieararchy of blocks
+print(b)
+```
+
+```{r}
+# plot hieararchy of blocks
+plot_hierarchy(b) 
+```
+
+```{r}
+# nodes from blocks
+blocks(b)
+```
+
+```{r}
+# graphs from blocks
+bg = graphs_from_cohesive_blocks(b, g)
+
+# plot most cohesive graph
+c = cohesion(b)
+h = bg[[which.max(c)]]
+plot(h, layout=layout_with_fr(h), vertex.size = 3, vertex.label=NA)
+```
+
+```{r}
+# connectivity of the graph
+vertex_connectivity(h)
+```
+
+```{r}
+#Weakly and strongly connected components of directed graphs
+n = 10
+p = 2/n
+g = sample_gnp(n, p, directed=TRUE)
+coords = layout_with_fr(g)
+plot(g, layout=coords, vertex.size = 6, vertex.label=NA, edge.arrow.size = 0.5, edge.curved = TRUE)
+```
+
+```{r}
+# weak components
+components(g, mode="weak")
+```
+
+```{r}
+# strong components
+c = components(g, mode="strong")
+nodes = which(c$membership == which.max(c$csize))
+
+# color in red the nodes in the giant component
+V(g)$color = "white"
+V(g)[nodes]$color = "red"
+plot(g, layout=coords, vertex.size = 6, vertex.label=NA, edge.arrow.size = 0.5, edge.curved = TRUE)
+```
+
+```{r}
+Resilience
+# percolation removes nodes from a graph and computes 
+# the size of the giant connected component
+# INPUT
+# g: graph to percolate
+# size: number of nodes to remove 
+# d: removal vector
+# OUTPUT
+# giant: a vector with sizes of giant components when nodes are removed
+percolate = function(g, size, d) {
+  
+  giant = vector()
+  
+  # initial size of giant component
+  c = components(g)
+  giant[1] = max(c$csize)
+  
+  names(d) = 1:length(d)
+  d = sort(d, decreasing=TRUE)
+  vital = as.integer(names(d[1:size]))
+  
+  for (i in 1:size) {
+    c = components(delete_vertices(g, vital[1:i]))
+    giant[i+1] = max(c$csize)
+  }
+  
+  return(giant)
+  
+}
+
+# Preferential attachment graph
+g = sample_pa(n = 100, m = 2, directed=FALSE)
+coords = layout_with_fr(g)
+plot(g, layout=coords, vertex.label=NA, vertex.size = 5)
+```
+
+```{r}
+# resilience
+size = vcount(g)/2
+# random
+rand = percolate(g, size, d = sample(V(g), size))    
+# degree
+deg = percolate(g, size, d = degree(g))    
+# pagerank
+pr = percolate(g, size, d=page_rank(g)$vector)    
+# betweenness
+bet = percolate(g, size, d = betweenness(g))    
+
+plot(0:size, deg, type = "l", col=1, xlab="Number of removed nodes", ylab="Size of giant component")
+lines(0:size, pr, col=2)
+lines(0:size, bet, col=3)
+lines(0:size, rand, col=4)
+lines(0:size, rep(vcount(g)/2, size+1), lty=2)
+legend(x = "bottomleft", legend = c("deg", "pr", "btw", "rand"), lty = 1, col = 1:4)
+```
+
+```{r}
+g = sample_gnp(n=100, p=5/100)
+coords = layout_with_fr(g)
+plot(g, layout=coords, vertex.size = 3, vertex.label=NA)
+```
+
+```{r}
+# resilience
+size = vcount(g)/2
+# random
+rand = percolate(g, size, d = sample(V(g), size))    
+# degree
+deg = percolate(g, size, d = degree(g))    
+# pagerank
+pr = percolate(g, size, d=page_rank(g)$vector)    
+# betweenness
+bet = percolate(g, size, d = betweenness(g))    
+
+plot(0:size, deg, type = "l", col=1, xlab="Number of removed nodes", ylab="Size of giant component")
+lines(0:size, pr, col=2)
+lines(0:size, bet, col=3)
+lines(0:size, rand, col=4)
+lines(0:size, rep(vcount(g)/2, size+1), lty=2)
+legend(x = "bottomleft", legend = c("deg", "pr", "btw", "rand"), lty = 1, col = 1:4)
+```
+
