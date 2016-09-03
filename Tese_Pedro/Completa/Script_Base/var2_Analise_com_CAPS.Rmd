@@ -1,0 +1,3227 @@
+---
+title: "SNA Interactive Plotting fuull_no_zero_fancy"
+author: "Leonardo Martins"
+date: "17 de julho de 2016"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 12
+    fig_width: 12
+    keep_md: yes
+    number_sections: yes
+    theme: flatly
+    toc: yes
+---
+SNA Descritive Analysis from "Projeto Redes de Atenção às pessoas que consomem álcool e outras Drogas em Juiz de Fora-MG   Brazil"  - SNArRDJF
+
+Here you can find a basic script to analysis data from SNArRDJF - this script was elaborated considering its use for orther matrix adjacency data from SNArRDJF - Here we are going to analyse:
+
+# fuull_no_zero_fancy
+
+`#########################
+`# Basic Preparation #####
+`#########################
+
+##Loading objects generated with 1.Principal.Rmd Script - Please run this script only after run 1.Principal.Rmd
+```{r, echo=FALSE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+rm(list = ls()) # removing previous objects to be sure that we don't have objects conflicts name
+load("~/SNArRDJF/Robject/var2.RData")
+```
+##Reload packages
+```{r, message=TRUE, warning=TRUE}
+suppressMessages(library(RColorBrewer))
+suppressMessages(library(car))
+suppressMessages(library(xtable))
+suppressMessages(library(igraph))
+suppressMessages(library(magrittr))
+suppressMessages(library(keyplayer))
+suppressMessages(library(dplyr))
+suppressMessages(library(visNetwork))
+suppressMessages(library(knitr))
+suppressMessages(library(DT))
+```
+##Adding phantom tools
+```{r, message=TRUE, warning=TRUE}
+#In order to get dinamic javascript object install those ones. If you get problems installing go to Stackoverflow.com and type your error to discover what to do. In some cases the libraries need to be intalled in outside R libs.
+#devtools::install_github("wch/webshot")
+#webshot::install_phantomjs()
+```
+##Setting a random seed - this is a good strategy to keep the same graph pattern layout in a new report generation
+```{r, message=TRUE, warning=TRUE}
+set.seed(123)
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Removing CAPS AD - not here
+```{r}
+#var2_without_CAPS<-delete_vertices(var2,V(var2)[V2_LABEL_ID=="q170_CAPS...CAPS.AD"])
+var2_with_CAPS<-var2
+```
+
+##Vertices and Edges Number
+```{r, echo=T, message=FALSE, warning=FALSE}
+#1. Vertices and Edges
+var2_with_CAPS_vcount<-vcount(var2_with_CAPS)
+var2_with_CAPS_ecount<-ecount(var2_with_CAPS)
+```
+##Vertice Number
+Each vertice represents a service - named as an actor in our network
+```{r, echo=T, message=FALSE, warning=FALSE}
+vcount(var2_with_CAPS)
+```
+##Edge Number
+Each edge represents a connection between two services named as a tie
+```{r, echo=T, message=FALSE, warning=FALSE}
+ecount(var2_with_CAPS)
+```
+
+#Density - The proportion of present edges from all possible edges in the network.
+The density of a binary network is simply the proportion of all possible ties that are actually present.
+
+For a valued network, density is defined as the sum of the ties divided by the number of possible ties (i.e. the ratio of all tie strength that is actually present to the number of possible ties).  
+
+The density of a network may give us insights into such phenomena as the speed at which information diffuses among the nodes, and the extent to which actors have high levels of social capital and/or social constraint.
+
+
+##Edge Density
+The density of a graph is the ratio of the number of edges and the number of possible edges.
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+edge_density_var2_with_CAPS<-edge_density(var2_with_CAPS) #The proportion of present edges from all possible edges in the network.
+edge_density_var2_with_CAPS
+```
+##Edge connectivity - Adhesion
+The edge connectivity of a graph or two vertices, this is recently also called group adhesion.
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+edge_connectivity(var2_with_CAPS, source =NULL, target =NULL, checks = T) #source and target can be replaced - their are here just as default
+```
+###Adhesion example
+In order to use this we need to call source and target using the number of each vertex instead of the name - type in R to get numbers
+
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Names and numbers
+
+# list all if you have no idea about services id
+# V(var2_with_CAPS)$name 
+
+# list all three first (you can use c(1:3))
+V(var2_with_CAPS)$name[1]  # just as an example
+V(var2_with_CAPS)$name[2]  # just as an example
+V(var2_with_CAPS)$name[3]  # just as an example
+
+# list by others id's
+V(var2_with_CAPS)$name[6]  # just as an example
+V(var2_with_CAPS)$name[150]  # just as an example
+V(var2_with_CAPS)$name[185]  # just as an example
+
+```
+##Edge Connectivity - "CAPS_AD"==3 and "UAPS RURAL Buiéié"==150
+Point connection calculates the number of nodes that would have to be removed in order for one actor to no longer be able to reach another.  If there are many different pathways that connect two actors, they have high "connectivity" in the sense that there are multiple ways for a signal to reach from one to the other - lower number - worse resilience 
+
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+edge_connectivity(var2_with_CAPS, source =150, target =3, checks = T) 
+```
+
+#Vertex Connectivity - Group Cohesion
+
+It is the minimum number of vertices needed to remove to make the graph not strongly connected. (If the graph is not strongly connected then this is zero.). The cohesion of a graph (as defined by White and Harary, see references), is the vertex connectivity of the graph. This is calculated by cohesion.
+
+These three functions essentially calculate the same measure(s), more precisely vertex_connectivity is the most general, the other two are included only for the ease of using more descriptive function names.
+
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+vertex_connectivity(var2_with_CAPS, source = NULL, target = NULL, checks = TRUE)
+```
+
+##Cohesion example
+
+In order to use this we need to call source and target using the number of each vertex instead of the name - type in R to get numbers - see example above for more details 
+
+##Vertex Connectivity - "CRE_SOC_ CREAS Norte"==6 and "AJU_MUT_ Grupo A.A. Liberdade" ==185
+Minimum number of vertices needed to remove to make the vertex not connected by any vertex - it leads an error in case of using two connected vertex 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+vertex_connectivity(var2_with_CAPS, source =6, target =185, checks = T) 
+```
+
+#Centrality Measures
+
+• For undirected graphs:
+
+– Actor centrality - involvement (connections) with other actors
+
+• For directed graphs:
+
+– Actor centrality - source of the ties (outgoing edges)
+
+– Actor prestige - recipient of many ties (incoming edges)
+
+In general - high centrality degree means direct contact with many other actors
+
+##Centrality Degree (number of ties/nearest neighbors).
+
+##Saving in igrpah object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_indegree<-degree(var2_with_CAPS, mode = "in") # Actor prestige - recipient of many ties (incoming edges)
+V(var2_with_CAPS)$var2_outdegree <- degree(var2_with_CAPS, mode = "out") # Actor centrality - source of the ties (outgoing edges)
+V(var2_with_CAPS)$var2_totaldegree <- degree(var2_with_CAPS, mode = "total")
+```
+##Saving in Global Environment as an object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_indegree<-degree(var2_with_CAPS, mode = "in")
+var2_with_CAPS_outdegree<-degree(var2_with_CAPS, mode = "out")
+var2_with_CAPS_totaldegree<-degree(var2_with_CAPS, mode = "total")
+```
+
+#Centrality Degree Descriptive Statistics - non-normalized
+
+##Centrality Degree Descriptive Statistics - In
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##in
+summary(var2_with_CAPS_indegree)
+sd(var2_with_CAPS_indegree)
+```  
+##Histogram var2_with_CAPS degree - In
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var2_with_CAPS, mode = "in", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(var2_with_CAPS)/10, main="Histogram of Indegree Nodes - fuull_no_zero_fancy")
+```  
+
+##Centrality Degree Descriptive Statistics - Out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##out
+summary(var2_with_CAPS_outdegree)
+sd(var2_with_CAPS_outdegree)
+```  
+
+##Histogram var2_with_CAPS degree - Out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var2_with_CAPS, mode = "out", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(var2_with_CAPS)/10, main="Histogram of Outdegree Nodes - fuull_no_zero_fancy")
+```  
+
+##Centrality Degree Descriptive Statistics - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+##all
+summary(var2_with_CAPS_totaldegree)
+sd(var2_with_CAPS_totaldegree)
+```  
+##Histogram var2_with_CAPS degree - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var2_with_CAPS, mode = "all", normalized = F), ylab="Frequency", xlab="Degree",  breaks=vcount(var2_with_CAPS)/10, main="Histogram of All Degree Nodes - fuull_no_zero_fancy")
+```  
+
+#Compute strength - weighted
+
+A slightly more nuanced metric is “strength centrality”, which is defined as the sum of the weights of all the connections for a given node. This is also sometimes called “weighted degree centrality”
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_strength<- strength(var2_with_CAPS, weights=E(var2_with_CAPS)$weight)
+var2_strength<- strength(var2_with_CAPS, weights=E(var2_with_CAPS)$weight)
+```
+##Strength Stats
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_strength)
+sd(var2_strength)
+```
+##Histogram var2_with_CAPS degree - All
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(strength(var2_with_CAPS, weights=E(var2_with_CAPS)$weight), ylab="Frequency", xlab="Degree",  breaks=vcount(var2_with_CAPS)/10, main="Histogram of Strength Degree Nodes - fuull_no_zero_fancy")
+```  
+
+#Centrality Degree Normalized
+
+##Centrality Degree Normalized saving igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_indegree_n<-degree(var2_with_CAPS, mode = "in", normalized = T)
+V(var2_with_CAPS)$var2_outdegree_n<- degree(var2_with_CAPS, mode = "out", normalized = T)
+V(var2_with_CAPS)$var2_totaldegree_n<- degree(var2_with_CAPS, mode = "total", normalized = T)
+```
+##Saving in Global Environment as an object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_indegree_n<-degree(var2_with_CAPS, mode = "in", normalized = T)
+var2_with_CAPS_outdegree_n<-degree(var2_with_CAPS, mode = "out", normalized = T)
+var2_with_CAPS_totaldegree_n<-degree(var2_with_CAPS, mode = "total", normalized = T)
+```
+##Centrality Degree Normalized Descriptive Statistics - in
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_indegree_n)
+sd(var2_with_CAPS_indegree_n)
+```
+##Histogram var2_with_CAPS degree normalized - in
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var2_with_CAPS, mode = "in", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(var2_with_CAPS)/10, main="Histogram of Normalized Indegree Nodes - fuull_no_zero_fancy")
+```
+
+##Centrality Degree Normalized Descriptive Statistics - out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_outdegree_n)
+sd(var2_with_CAPS_outdegree_n)
+```
+
+##Histogram var2_with_CAPS degree normalized - out
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var2_with_CAPS, mode = "out", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(var2_with_CAPS)/10, main="Histogram of Normalized Outdegree Nodes - fuull_no_zero_fancy")
+```
+
+##Centrality Degree Normalized Descriptive Statistics - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_totaldegree_n)
+sd(var2_with_CAPS_totaldegree_n)
+```
+
+##Histogram var2_with_CAPS degree normalized - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree(var2_with_CAPS, mode = "all", normalized = T), ylab="Frequency", xlab="Normalized Degree",  breaks=vcount(var2_with_CAPS)/10, main="Histogram of Normalized All Degree Nodes - fuull_no_zero_fancy")
+```
+
+#Centralization Degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_centr_degree <- centralization.degree(var2_with_CAPS)$res
+var2_centr_degree <- centralization.degree(var2_with_CAPS)
+```
+
+##Centralization
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_centr_degree$centralization
+```
+##Theoretical Max
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_centr_degree$theoretical_max
+```
+
+#Degree distribution considering total equal one
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_degree.distribution<-degree.distribution(var2_with_CAPS)
+```
+
+##Degree distribution Descriptive Stats
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_degree.distribution)
+sd(var2_with_CAPS_degree.distribution)
+```
+
+##Histogram var2_with_CAPS distribution degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+hist(degree.distribution(var2_with_CAPS), breaks=vcount(var2_with_CAPS)/10, ylab="Frequency", xlab="Degree Distribuition", main="Histogram of Degree Distribuition - fuull_no_zero_fancy")
+```
+
+##Degree Probability Distribution
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dd <- degree.distribution(var2_with_CAPS, cumulative=T, mode="all")
+```
+
+##Degree Probability Distribution - Plot Cumulative Frequency
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(dd, pch=19, cex=1, col="orange", xlab="Degree", ylab="Cumulative Frequency", main= "Cumulative Frequency of fuull_no_zero_fancy ")
+```
+
+#Log-Log Degree Distribution - Scale Free Network - Does it fit to power law ?
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dd.var2_with_CAPS <- degree.distribution(var2_with_CAPS)
+d <- 1:max(degree(var2_with_CAPS))-1
+ind <- (dd.var2_with_CAPS != 0)
+```
+
+##Plot Log-Log Degree Distribution
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(d[ind], 
+     dd.var2_with_CAPS[ind], 
+     log="xy", 
+     col="blue",
+     xlab=c("Log-Degree"), 
+     ylab=c("Log-Intensity"),
+     main="Log-Log Degree Distribution For fuull_no_zero_fancy"
+     )
+```
+
+#Average Neighbor Degree versus Vertex Degree (log-log scale for fuull_no_zero_fancy)
+
+The neighborhood of a given order y of a vertex v includes all vertices which are closer to v than the order. Ie. order y=0 is always v itself, order 1 is v plus its immediate neighbors, order 2 is order 1 plus the immediate neighbors of the vertices in order 1, etc.
+
+##Simplify graph first 
+```{r}
+var2_with_CAPS_simplified<-simplify(var2_with_CAPS)
+```
+
+##Average Neighbor Degree versus vertex degree (log-log scale for var2_with_CAPS)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_a.nn.deg <- graph.knn(var2_with_CAPS_simplified, weights =E(var2_with_CAPS_simplified)$weight)$knn %>% round(1)
+```
+
+##Saving to igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg <- graph.knn(var2_with_CAPS_simplified, weights=E(var2_with_CAPS_simplified)$weight)$knn
+```
+
+##Table Average Neighbor Degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d<-cbind(V(var2_with_CAPS_simplified)$LABEL_COR,var2_with_CAPS_a.nn.deg)
+datatable(d)
+```
+
+##Plotting Average Neighbor Degree versus vertex degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(degree(var2_with_CAPS_simplified), 
+     var2_with_CAPS_a.nn.deg, 
+     log="xy", 
+     col="goldenrod", 
+     xlab=c("Log Vertex Degree"),
+     ylab=c("Log Average Neighbor Degree"),
+     main="Average Neighbor Degree vs Vertex Degree - Log-Log Scale for fuull_no_zero_fancy"
+     )
+```
+
+#Average Weighted Neighbor Degree versus vertex degree (log-log scale for weighted fuull_no_zero_fancy)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_a.nn.deg_w <- graph.knn(var2_with_CAPS_simplified, weights=E(var2_with_CAPS_simplified)$weight)$knn %>% round(1)
+```
+
+##Saving to igraph object
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg_w <-var2_with_CAPS_a.nn.deg <- graph.knn(var2_with_CAPS_simplified, weights=E(var2_with_CAPS_simplified)$weight)$knn
+```
+
+##Average Weighted Neighbor Descriptive
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_a.nn.deg_w)
+sd(var2_with_CAPS_a.nn.deg_w, na.rm = T)
+```
+
+##Table Average Neighbor Degree Weighted
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+d<-cbind(V(var2_with_CAPS_simplified)$LABEL_COR,var2_with_CAPS_a.nn.deg_w)
+datatable(d)
+```
+
+##Plotting Average Neighbor Degree versus vertex degree
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+plot(degree(var2_with_CAPS_simplified), 
+     var2_with_CAPS_a.nn.deg, 
+     log="xy", 
+     col="goldenrod", 
+     xlab=c("Log Vertex Degree"),
+     ylab=c("Log Average Neighbor Degree"),
+     main="Average Weighted Neighbor Degree vs Vertex Degree - Log-Log Scale For Weighted fuull_no_zero_fancy"
+     )
+```
+
+#Degree Centralities Dinamic Table
+
+##Getting Degree Measures
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_indegree<-degree(var2_with_CAPS, mode = "in")
+var2_with_CAPS_outdegree<-degree(var2_with_CAPS, mode = "out")
+var2_with_CAPS_totaldegree<-degree(var2_with_CAPS, mode = "total")
+var2_strength<- strength(var2_with_CAPS, weights=E(var2_with_CAPS)$weight)
+var2_with_CAPS_indegree_n<-degree(var2_with_CAPS, mode = "in", normalized = T) %>% round(3)
+var2_with_CAPS_outdegree_n<-degree(var2_with_CAPS, mode = "out", normalized = T) %>% round(3)
+var2_with_CAPS_totaldegree_n<-degree(var2_with_CAPS, mode = "total", normalized = T) %>% round(3)
+var2_centr_degree <- centralization.degree(var2_with_CAPS)$res
+var2_with_CAPS_a.nn.deg <- graph.knn(var2_with_CAPS_simplified)$knn %>% round(1)
+var2_with_CAPS_a.nn.deg_w <- graph.knn(var2_with_CAPS_simplified, weights=E(var2_with_CAPS_simplified)$weight)$knn %>% round(1)
+```
+
+##Creating a dataframe of measures
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_df_degree <- data.frame(var2_with_CAPS_indegree,
+var2_with_CAPS_outdegree, 
+var2_with_CAPS_totaldegree,
+var2_with_CAPS_indegree_n, 
+var2_with_CAPS_outdegree_n,
+var2_with_CAPS_totaldegree_n,
+var2_strength,
+var2_centr_degree,
+var2_with_CAPS_a.nn.deg,
+var2_with_CAPS_a.nn.deg_w) %>% round(3)
+
+#Adding type
+var2_with_CAPS_df_degree <-cbind(var2_with_CAPS_df_degree, V(var2_with_CAPS)$LABEL_COR)
+
+#Adding names
+names(var2_with_CAPS_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+var2_with_CAPS_df_degree<-var2_with_CAPS_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(. ~ Type, var2_with_CAPS_df_degree, function(x) c(mean=mean(x)))
+
+#Removing Type variable
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_df_degree, function(x) c(median=median(x)))
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+names(aggdata_median) <- c("Group", "In Degree(median)", "Out Degree(median)", "Total Degree(median)","In Degree Normalized(median)", "Out Degree Normalized(median)", "Total Degree Normalized(median)", "Strength(median)","Centralization Degree(median)","Average Neighbor Degree(median)","Average Weighted Neighbor Degree(median)")
+```
+
+##Merging mean and median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(median)", "Out Degree(M)", "Out Degree(median)","Total Degree(M)", "Total Degree(median)", "In Degree Normalized(M)", "In Degree Normalized(median)", "Out Degree Normalized(M)", "Out Degree Normalized(median)", "Total Degree Normalized(M)", "Total Degree Normalized(median)", "Strength(M)","Strength(median)", "Centralization Degree(M)","Centralization Degree(median)","Average Neighbor Degree(M)","Average Neighbor Degree(median)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(median)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a dataframe of measures (Natureza Governamental)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_df_degree <- data.frame(var2_with_CAPS_indegree,
+var2_with_CAPS_outdegree, 
+var2_with_CAPS_totaldegree,
+var2_with_CAPS_indegree_n, 
+var2_with_CAPS_outdegree_n,
+var2_with_CAPS_totaldegree_n,
+var2_strength,
+var2_centr_degree,
+var2_with_CAPS_a.nn.deg,
+var2_with_CAPS_a.nn.deg_w) %>% round(3)
+
+#Adding type
+var2_with_CAPS_df_degree <-cbind(var2_with_CAPS_df_degree, V(var2_with_CAPS)$TIPO1)
+
+#Adding names
+names(var2_with_CAPS_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+var2_with_CAPS_df_degree<-var2_with_CAPS_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_df_degree, by=list(var2_with_CAPS_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_df_degree, function(x) c(median=median(x)))
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+names(aggdata_median) <- c("Group", "In Degree(median)", "Out Degree(median)", "Total Degree(median)","In Degree Normalized(median)", "Out Degree Normalized(median)", "Total Degree Normalized(median)", "Strength(median)","Centralization Degree(median)","Average Neighbor Degree(median)","Average Weighted Neighbor Degree(median)")
+```
+
+##Merging mean and median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(median)", "Out Degree(M)", "Out Degree(median)","Total Degree(M)", "Total Degree(median)", "In Degree Normalized(M)", "In Degree Normalized(median)", "Out Degree Normalized(M)", "Out Degree Normalized(median)", "Total Degree Normalized(M)", "Total Degree Normalized(median)", "Strength(M)","Strength(median)", "Centralization Degree(M)","Centralization Degree(median)","Average Neighbor Degree(M)","Average Neighbor Degree(median)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(median)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a dataframe of measures (Setores)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_df_degree <- data.frame(var2_with_CAPS_indegree,
+var2_with_CAPS_outdegree, 
+var2_with_CAPS_totaldegree,
+var2_with_CAPS_indegree_n, 
+var2_with_CAPS_outdegree_n,
+var2_with_CAPS_totaldegree_n,
+var2_strength,
+var2_centr_degree,
+var2_with_CAPS_a.nn.deg,
+var2_with_CAPS_a.nn.deg_w) %>% round(3)
+
+#Adding type
+var2_with_CAPS_df_degree <-cbind(var2_with_CAPS_df_degree, V(var2_with_CAPS)$TIPO2)
+
+#Adding names
+names(var2_with_CAPS_df_degree) <- c("In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree","Type")
+
+#Ordering Variables
+var2_with_CAPS_df_degree<-var2_with_CAPS_df_degree[c("Type","In Degree", "Out Degree", "Total Degree","In Degree Normalized", "Out Degree Normalized", "Total Degree Normalized", "Strength","Centralization Degree","Average Neighbor Degree","Average Weighted Neighbor Degree")]
+```
+
+##General tabel - DT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_df_degree, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_df_degree, by=list(var2_with_CAPS_df_degree$Type), FUN=mean, na.rm=TRUE)
+
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+names(aggdata_mean) <- c("Group", "In Degree(M)", "Out Degree(M)", "Total Degree(M)","In Degree Normalized(M)", "Out Degree Normalized(M)", "Total Degree Normalized(M)", "Strength(M)","Centralization Degree(M)","Average Neighbor Degree(M)","Average Weighted Neighbor Degree(M)")
+```
+
+##Aggregating data from previous table - median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_df_degree, function(x) c(median=median(x)))
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+names(aggdata_median) <- c("Group", "In Degree(median)", "Out Degree(median)", "Total Degree(median)","In Degree Normalized(median)", "Out Degree Normalized(median)", "Total Degree Normalized(median)", "Strength(median)","Centralization Degree(median)","Average Neighbor Degree(median)","Average Weighted Neighbor Degree(median)")
+```
+
+##Merging mean and median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(2) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Degree(M)","In Degree(median)", "Out Degree(M)", "Out Degree(median)","Total Degree(M)", "Total Degree(median)", "In Degree Normalized(M)", "In Degree Normalized(median)", "Out Degree Normalized(M)", "Out Degree Normalized(median)", "Total Degree Normalized(M)", "Total Degree Normalized(median)", "Strength(M)","Strength(median)", "Centralization Degree(M)","Centralization Degree(median)","Average Neighbor Degree(M)","Average Neighbor Degree(median)","Average Weighted Neighbor Degree(M)", "Average Weighted Neighbor Degree(median)")]
+```
+
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$color[edge.start],
+     edge.arrow.size=(degree(var2_with_CAPS)+1)/(100*mean(degree(var2_with_CAPS))),
+     edge.width=E(var2_with_CAPS)$weight/(10*mean(E(var2_with_CAPS)$weight)),
+     edge.curved = TRUE,
+     vertex.size=log((degree(var2_with_CAPS)+2))*(0.5*mean(degree(var2_with_CAPS))),
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=log(degree(var2_with_CAPS)+2)/mean(degree(var2_with_CAPS)),
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$LABEL_COR
+b<-V(var2_with_CAPS)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Vertex Degree Sized - fuull_no_zero_fancy", sub = "Source: from authors ", cex = .5)
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\n Median Out Degree: %.2f",
+     median(degree(var2_with_CAPS, mode="in")), 
+     median(degree(var2_with_CAPS, mode="out"))
+   ))
+```
+
+#Network plotting based only on degree measures 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+#Get Variable
+V(var2_with_CAPS)$var2_color_degree<-V(var2_with_CAPS)$var2_totaldegree %>% round(1)
+
+#Creating brewer pallette
+var2_vertex_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var2_with_CAPS)$var2_color_degree)), "RdBu"))(
+            length(unique(V(var2_with_CAPS)$var2_color_degree)))
+
+#Saving as Vertex properties 
+V(var2_with_CAPS)$var2_vertex_color_degree<- var2_vertex_color_degree[as.numeric(cut(degree(var2_with_CAPS),breaks =length(unique(V(var2_with_CAPS)$var2_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     #edge.color=V(var2_with_CAPS)$color[edge.start],
+     edge.arrow.size=(degree(var2_with_CAPS)+1)/3000,
+     edge.width=E(var2_with_CAPS)$weight/10,
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$var2_vertex_color_degree,
+     vertex.size=log((degree(var2_with_CAPS)+2))*10,
+     vertex.size=20,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=log((degree(var2_with_CAPS)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$var2_color_degree
+b<-V(var2_with_CAPS)$var2_vertex_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Vertex Degree Sized and Red to Blue - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\nMedian Out Degree: %.2f",
+     median(degree(var2_with_CAPS, mode="in")), 
+     median(degree(var2_with_CAPS, mode="out"))
+   ))
+```
+
+#Network Plotting Centralization - Degree Measures - Using Spectral Color as Distance Measure Representation
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+#Get Variable
+V(var2_with_CAPS)$var2_color_degree<-V(var2_with_CAPS)$var2_centr_degree
+
+#Creating brewer pallette
+var2_vertex_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var2_with_CAPS)$var2_color_degree)), "Spectral"))(
+            length(unique(V(var2_with_CAPS)$var2_color_degree)))
+
+#Saving as Vertex properties 
+V(var2_with_CAPS)$var2_vertex_color_degree<- var2_vertex_color_degree[as.numeric(cut(V(var2_with_CAPS)$var2_color_degree,breaks =length(unique(V(var2_with_CAPS)$var2_color_degree))))]
+
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$var2_vertex_color_degree[edge.start],
+     edge.arrow.size=(degree(var2_with_CAPS)+1)/10000,
+     edge.width=E(var2_with_CAPS)$weight/10,
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$var2_vertex_color_degree,
+     vertex.size=log((V(var2_with_CAPS)$var2_centr_degree+2))*10,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=log((degree(var2_with_CAPS)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$var2_color_degree
+b<-V(var2_with_CAPS)$var2_vertex_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Vertex Centralization Degree Sized Spectral Colored - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median In Degree: %.2f\nMedian Out Degree: %.2f",
+     median(degree(var2_with_CAPS, mode="in")), 
+     median(degree(var2_with_CAPS, mode="out"))
+   ))
+```
+
+#Alternative vizualization using degree in order to genarete sub-graphs - Higher than median degree network
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+# Network elements with lower than meadian degree
+higherthanmedian.network_var2_with_CAPS<-V(var2_with_CAPS)[degree(var2_with_CAPS)<median(degree(var2_with_CAPS))] 
+
+#Deleting vertices based in intersection betewenn var2_with_CAPS 
+high_var2_with_CAPS<-delete.vertices(var2_with_CAPS, higherthanmedian.network_var2_with_CAPS)
+
+#Plotting based only on degree measures 
+edge.start <- ends(high_var2_with_CAPS, es=E(high_var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(high_var2_with_CAPS))
+maxC <- rep(Inf, vcount(high_var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(high_var2_with_CAPS, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(high_var2_with_CAPS)$weight)
+
+#PLotting
+plot(high_var2_with_CAPS, 
+     layout=co,
+     edge.color=V(high_var2_with_CAPS)$color[edge.start],
+     edge.arrow.size=(degree(high_var2_with_CAPS)+1)/1000,
+     edge.width=E(high_var2_with_CAPS)$weight/10,
+     edge.curved = TRUE,
+     vertex.size=log((V(high_var2_with_CAPS)$var2_centr_degree+2))*10,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(high_var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=log((degree(high_var2_with_CAPS)+2))/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(high_var2_with_CAPS)$LABEL_COR
+b<-V(high_var2_with_CAPS)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=3,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Higher Than Median Degree - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean In Degree: %.2f\n Mean Out Degree: %.2f",
+     mean(degree(high_var2_with_CAPS, mode="in")), 
+     mean(degree(high_var2_with_CAPS, mode="out"))
+   )
+  )
+```
+
+#Alternative vizualization using degree in order to genarete sub-graphs - Lower than median degree network 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Set Seed
+set.seed(123)
+
+# Network elements with lower than meadian degree
+lowerthanmedian.network_var2_with_CAPS<-V(var2_with_CAPS)[degree(var2_with_CAPS)>median(degree(var2_with_CAPS))] 
+
+#Deleting vertices based in intersection betewenn var2_with_CAPS 
+small_var2_with_CAPS<-delete.vertices(var2_with_CAPS, lowerthanmedian.network_var2_with_CAPS)
+
+#Plotting based only on degree measures 
+edge.start <- ends(small_var2_with_CAPS, es=E(small_var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(small_var2_with_CAPS))
+maxC <- rep(Inf, vcount(small_var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(small_var2_with_CAPS, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(small_var2_with_CAPS)$weight)
+
+#PLotting
+plot(small_var2_with_CAPS, 
+     layout=co,
+     edge.color=V(small_var2_with_CAPS)$color[edge.start],
+     edge.arrow.size=(degree(small_var2_with_CAPS)+1)/1000,
+     edge.width=E(small_var2_with_CAPS)$weight/10,
+     edge.curved = TRUE,
+     vertex.size=log((V(small_var2_with_CAPS)$var2_centr_degree+2))*20,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(small_var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=log((degree(small_var2_with_CAPS)+2))/3,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(small_var2_with_CAPS)$LABEL_COR
+b<-V(small_var2_with_CAPS)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Smaller Than Median Degree - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Mean In Degree: %.2f\nMean Out Degree: %.2f",
+     mean(degree(small_var2_with_CAPS, mode="in")), 
+     mean(degree(small_var2_with_CAPS, mode="out"))
+   )
+  )
+```
+
+#Plotting using Average Neighbor Degree
+```{r, echo=TRUE}
+#Set Seed
+set.seed(123)
+
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS_simplified, es=E(var2_with_CAPS_simplified), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS_simplified))
+maxC <- rep(Inf, vcount(var2_with_CAPS_simplified))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS_simplified, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS_simplified)$weight)
+
+#Plotting based only on degree measures  #var2_with_CAPS_simplified_a.nn.deg
+V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg<-as.numeric(graph.knn(var2_with_CAPS_simplified)$knn)
+V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg[V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg=="NaN"]<-0
+
+#PLotting
+plot(var2_with_CAPS_simplified, 
+     layout=co,
+     edge.color=V(var2_with_CAPS_simplified)$color[edge.start],
+     edge.arrow.size=sqrt((V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg)^2+1)/1000,
+     edge.width=E(var2_with_CAPS_simplified)$weight/80,
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS_simplified)$color,
+     vertex.size=(sqrt((V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg)^2))/1,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS_simplified,"LABEL_COR"),
+     vertex.label.cex=(sqrt((V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg)^2)+1)/250,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS_simplified)$LABEL_COR
+b<-V(var2_with_CAPS_simplified)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       inset=2,
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=3,
+       lwd=2,
+       x.intersp=2,
+       y.intersp=4,
+       cex = .3)
+
+#Adding Title
+  title("Network Average Neighbor Degree Sized - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median Average Neighbor Degree: %.2f",
+     median((var2_with_CAPS_a.nn.deg+1))
+   ))
+```
+
+#Plotting using Average Neighbor Degree
+```{r, echo=TRUE}
+#Set Seed
+set.seed(123)
+
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS_simplified, es=E(var2_with_CAPS_simplified), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS_simplified))
+maxC <- rep(Inf, vcount(var2_with_CAPS_simplified))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS_simplified, niter=10000, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS_simplified)$weight)
+
+
+#Plotting based only on degree measures  #var2_with_CAPS_a.nn.deg
+V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg_w<-as.numeric(graph.knn(var2_with_CAPS_simplified, weights = E(var2_with_CAPS_simplified)$weight)$knn)
+V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg_w[V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg_w=="NaN"]<-0
+
+#PLotting
+plot(var2_with_CAPS_simplified, 
+     layout=co,
+     edge.color=V(var2_with_CAPS_simplified)$color[edge.start],
+     edge.arrow.size=sqrt((V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg_w)^2+1)/1000,
+     edge.width=E(var2_with_CAPS_simplified)$weight/100,
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS_simplified)$color,
+     vertex.size=(sqrt((V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg_w)^2))/5,
+     vertex.frame.color="#ffffff",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS_simplified,"LABEL_COR"),
+     vertex.label.cex=(sqrt((V(var2_with_CAPS_simplified)$var2_with_CAPS_a.nn.deg_w)^2)+1)/500,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2]))
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS_simplified)$LABEL_COR
+b<-V(var2_with_CAPS_simplified)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=4,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .5)
+
+#Adding Title
+  title("Network Average Weighted Neighbor Degree Sized - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text(x=range(co[,1])[1], y=range(co[,2])[1], labels = 
+   sprintf("Median Average Weighted Neighbor Degree: %.2f",
+     median((var2_with_CAPS_a.nn.deg_w+1))
+   ))
+```
+
+#Circle Degree ***Too intensive computation*** #code
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Circle Degree ***Too intense computation***
+#A_var2_with_CAPS <- get.adjacency(var2_with_CAPS, sparse=FALSE)
+#detach("package:igraph", unload=TRUE)
+#library(network)
+#g <- network::as.network.matrix(A_var2_with_CAPS)
+#library(sna)
+#gplot.target(g, degree(g), main="Circle Degree")
+#library(igraph)
+```
+
+#Closeness - centrality based on distance to others in the graph 
+
+*How close an actor to all the other actors in network?*
+
+High closeness centrality - short communication path to others, minimal number of steps to reach others.
+
+Answers the “Kevin Bacon” question:
+
+*How many steps are required to access every other vertex from a given vertex?*
+
+One practical implication of this metric: it helps you gauge how information might spread within your network, and who might be the best people to leverage if you need to make sure information gets around. Link here: <http://www.tc.umn.edu/~alink/R-social-network-analysis.html>
+
+Closeness centrality can be defined as a measure of how far other nodes are from the node in question. Nodes with high closeness centrality are likely to be relatively efficient in receiving or transmitting information to/from distant parts of the social network.
+
+Scores may be interpreted as arising from a reciprocal process in which the centrality of each actor is proportional to the sum of the centralities of those actors to whom he or she is connected. 
+
+In general, vertices with high eigenvector centralities are those which are connected to many other vertices which are, in turn, connected to many others (and so on). (The perceptive may realize that this implies that the largest values will be obtained by individuals in large cliques (or high-density substructures)
+
+##Closeness Non-normalized
+
+###Saving to Igraph object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_incloseness <- closeness(var2_with_CAPS, mode = "in", weights = E(var2_with_CAPS)$var2) %>% round(6)
+V(var2_with_CAPS)$var2_outcloseness <- closeness(var2_with_CAPS, mode = "out", weights = E(var2_with_CAPS)$var2) %>% round(6)
+V(var2_with_CAPS)$var2_totalcloseness <- closeness(var2_with_CAPS, mode = "total", weights = E(var2_with_CAPS)$var2) %>% round(4)
+```
+
+###Saving to Environment
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_incloseness<- closeness(var2_with_CAPS, mode = "in", weights = E(var2_with_CAPS)$var2) %>% round(6)
+var2_with_CAPS_outcloseness<- closeness(var2_with_CAPS, mode = "out", weights = E(var2_with_CAPS)$var2) %>% round(6)
+var2_with_CAPS_totalcloseness<- closeness(var2_with_CAPS, mode = "total", weights = E(var2_with_CAPS)$var2) %>% round(6)
+```
+
+##Closeness Non-normalized - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_incloseness)
+sd(var2_with_CAPS_incloseness)
+```
+
+###Network Plotting Based On Non-normalized Closeness - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(var2_with_CAPS)$var2_incloseness<-closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="in")
+
+#Get Variable
+V(var2_with_CAPS)$var2_color_degree<-round(V(var2_with_CAPS)$var2_incloseness,6)
+
+#Creating brewer pallette
+var2_vertex_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var2_with_CAPS)$var2_color_degree)), "RdBu"))(
+            length(unique(V(var2_with_CAPS)$var2_color_degree)))
+
+#Saving as Vertex properties 
+V(var2_with_CAPS)$var2_vertex_color_degree<-
+  var2_vertex_color_degree[as.numeric(
+  cut(V(var2_with_CAPS)$var2_color_degree,
+      breaks=length(unique(V(var2_with_CAPS)$var2_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$var2_vertex_color_degree[edge.start],
+     edge.arrow.size=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="in"),
+     edge.width=E(var2_with_CAPS)$weight/mean(E(var2_with_CAPS)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$var2_vertex_color_degree,
+     vertex.size=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="in")*10^5,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=(closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="in")+10^-5)*2000,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$var2_color_degree
+b<-V(var2_with_CAPS)$var2_vertex_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized and Colored In - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median In Closennes:%.4f\nSD In Closennes: %.5f",
+             median(closeness(var2_with_CAPS, mode="in", weights = E(var2_with_CAPS)$var2)), 
+             sd(closeness(var2_with_CAPS, mode="in", weights = E(var2_with_CAPS)$var2))
+             )
+       )
+```
+
+##Closeness Non-normalized - OUT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_outcloseness)
+sd(var2_with_CAPS_outcloseness)
+```
+
+
+###Network Plotting Based On Non-normalized Closeness - OUT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(var2_with_CAPS)$var2_outcloseness<-closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="out")
+
+#Get Variable
+V(var2_with_CAPS)$var2_color_degree<-round(V(var2_with_CAPS)$var2_outcloseness,6)
+
+#Creating brewer pallette
+var2_vertex_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var2_with_CAPS)$var2_color_degree)), "RdBu"))(
+            length(unique(V(var2_with_CAPS)$var2_color_degree)))
+
+#Saving as Vertex properties 
+V(var2_with_CAPS)$var2_vertex_color_degree<-
+  var2_vertex_color_degree[as.numeric(
+  cut(V(var2_with_CAPS)$var2_color_degree,
+      breaks=length(unique(V(var2_with_CAPS)$var2_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$var2_vertex_color_degree[edge.start],
+     edge.arrow.size=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="out"),
+     edge.width=E(var2_with_CAPS)$weight/2*mean(E(var2_with_CAPS)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$var2_vertex_color_degree,
+     vertex.size=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="out")*10^4,
+     vertex.frame.color="white",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="out")*200,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$var2_color_degree
+b<-V(var2_with_CAPS)$var2_vertex_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized and Colored OUT - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median OUT Closennes:%.4f\nSD OUT Closennes: %.5f",
+             median(closeness(var2_with_CAPS, mode="out", weights = E(var2_with_CAPS)$var2)), 
+             sd(closeness(var2_with_CAPS, mode="out", weights = E(var2_with_CAPS)$var2))
+             )
+       )
+```
+
+##Closeness Non-normalized - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_totalcloseness)
+sd(var2_with_CAPS_totalcloseness)
+```
+
+###Network Plotting Based On Non-normalized Closeness - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(var2_with_CAPS)$var2_allcloseness<-closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="all")
+
+#Get Variable
+V(var2_with_CAPS)$var2_color_degree<-round(V(var2_with_CAPS)$var2_allcloseness,6)
+
+#Creating brewer pallette
+var2_vertex_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var2_with_CAPS)$var2_color_degree)), "RdBu"))(
+            length(unique(V(var2_with_CAPS)$var2_color_degree)))
+
+#Saving as Vertex properties 
+V(var2_with_CAPS)$var2_vertex_color_degree<-
+  var2_vertex_color_degree[as.numeric(
+  cut(V(var2_with_CAPS)$var2_color_degree,
+      breaks=length(unique(V(var2_with_CAPS)$var2_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$var2_vertex_color_degree[edge.start],
+     edge.arrow.size=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="all"),
+     edge.width=E(var2_with_CAPS)$weight/2*mean(E(var2_with_CAPS)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$var2_vertex_color_degree,
+     vertex.size=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="all")*10^4,
+     vertex.frame.color="white",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=(closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="all")+0.00001)*200,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$var2_color_degree
+b<-V(var2_with_CAPS)$var2_vertex_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized and Colored all - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median all Closennes:%.4f\nSD all Closennes: %.5f",
+             median(closeness(var2_with_CAPS, mode="all", weights = E(var2_with_CAPS)$var2)), 
+             sd(closeness(var2_with_CAPS, mode="all", weights = E(var2_with_CAPS)$var2))
+             )
+       )
+```
+
+##Closeness Normalized 
+
+###Saving to Igraph object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_incloseness_n <- closeness(var2_with_CAPS, mode = "in",, weights = E(var2_with_CAPS)$var2, normalized = T) %>% round(10)
+V(var2_with_CAPS)$var2_outcloseness_n <- closeness(var2_with_CAPS, mode = "out", normalized = T, weights = E(var2_with_CAPS)$var2) %>% round(6)
+V(var2_with_CAPS)$var2_totalcloseness_n <- closeness(var2_with_CAPS, mode = "total", normalized = T, weights = E(var2_with_CAPS)$var2) %>% round(6)
+```
+
+###Saving to Environment
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_incloseness_n<- closeness(var2_with_CAPS, mode = "in", normalized = T, weights = E(var2_with_CAPS)$var2) %>% round(6)
+var2_with_CAPS_outcloseness_n<- closeness(var2_with_CAPS, mode = "out", normalized = T, weights = E(var2_with_CAPS)$var2) %>% round(6)
+var2_with_CAPS_totalcloseness_n<- closeness(var2_with_CAPS, mode = "total", normalized = T, weights = E(var2_with_CAPS)$var2) %>% round(6)
+```
+
+###Closeness Normalized  - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_incloseness_n)
+sd(var2_with_CAPS_incloseness_n)
+```
+
+##Network Plotting Based On Normalized Closeness - IN
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(var2_with_CAPS)$var2_incloseness_n<-closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="in", normalized = T)
+
+#Get Variable
+V(var2_with_CAPS)$var2_color_degree<-round(V(var2_with_CAPS)$var2_incloseness_n,6)
+
+#Creating brewer pallette
+var2_vertex_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var2_with_CAPS)$var2_color_degree)), "RdBu"))(
+            length(unique(V(var2_with_CAPS)$var2_color_degree)))
+
+#Saving as Vertex properties 
+V(var2_with_CAPS)$var2_vertex_color_degree<-
+  var2_vertex_color_degree[as.numeric(
+  cut(V(var2_with_CAPS)$var2_color_degree,
+      breaks=length(unique(V(var2_with_CAPS)$var2_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$var2_vertex_color_degree[edge.start],
+     edge.arrow.size=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="in",normalized = T),
+     edge.width=E(var2_with_CAPS)$weight/1000*mean(E(var2_with_CAPS)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$var2_vertex_color_degree,
+     vertex.size=(closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="in",normalized = T))*1000,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="in",normalized = T)*10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$var2_color_degree
+b<-V(var2_with_CAPS)$var2_vertex_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized Normalized In - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median In Closennes:%.4f\nSD In Closennes: %.5f",
+             median(closeness(var2_with_CAPS, mode="in", weights = E(var2_with_CAPS)$var2, normalized = T)), 
+             sd(closeness(var2_with_CAPS, mode="in", weights = E(var2_with_CAPS)$var2, normalized = T))
+             )
+       )
+```
+###Closeness Normalized  - OUT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_outcloseness_n)
+sd(var2_with_CAPS_outcloseness_n)
+```
+
+##Network Plotting Based On Normalized Closeness - OUT
+
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(var2_with_CAPS)$var2_outcloseness_n<-closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="out", normalized = T)
+
+#Get Variable
+V(var2_with_CAPS)$var2_color_degree<-round(V(var2_with_CAPS)$var2_outcloseness_n,6)
+
+#Creating brewer pallette
+var2_vertex_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var2_with_CAPS)$var2_color_degree)), "RdBu"))(
+            length(unique(V(var2_with_CAPS)$var2_color_degree)))
+
+#Saving as Vertex properties 
+V(var2_with_CAPS)$var2_vertex_color_degree<-
+  var2_vertex_color_degree[as.numeric(
+  cut(V(var2_with_CAPS)$var2_color_degree,
+      breaks=length(unique(V(var2_with_CAPS)$var2_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$var2_vertex_color_degree[edge.start],
+     edge.arrow.size=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="out",normalized = T),
+     edge.width=E(var2_with_CAPS)$weight/10*mean(E(var2_with_CAPS)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$var2_vertex_color_degree,
+     vertex.size=(closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="out",normalized = T))*100,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="out",normalized = T)*1.5,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$var2_color_degree
+b<-V(var2_with_CAPS)$var2_vertex_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized Normalized OUT - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median OUT Closennes:%.4f\nSD OUT Closennes: %.5f",
+             median(closeness(var2_with_CAPS, mode="out", weights = E(var2_with_CAPS)$var2, normalized = T)), 
+             sd(closeness(var2_with_CAPS, mode="out", weights = E(var2_with_CAPS)$var2, normalized = T))
+             )
+       )
+```
+
+###Closeness Normalized - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_totalcloseness_n)
+sd(var2_with_CAPS_totalcloseness_n)
+```
+
+##Network Plotting Based On Normalized Closeness - ALL
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(var2_with_CAPS)$var2_allcloseness_n<-closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="all", normalized = T)
+
+#Get Variable
+V(var2_with_CAPS)$var2_color_degree<-round(V(var2_with_CAPS)$var2_allcloseness_n,6)
+
+#Creating brewer pallette
+var2_vertex_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var2_with_CAPS)$var2_color_degree)), "RdBu"))(
+            length(unique(V(var2_with_CAPS)$var2_color_degree)))
+
+#Saving as Vertex properties 
+V(var2_with_CAPS)$var2_vertex_color_degree<-
+  var2_vertex_color_degree[as.numeric(
+  cut(V(var2_with_CAPS)$var2_color_degree,
+      breaks=length(unique(V(var2_with_CAPS)$var2_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$var2_vertex_color_degree[edge.start],
+     edge.arrow.size=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="all",normalized = T),
+     edge.width=E(var2_with_CAPS)$weight/10*mean(E(var2_with_CAPS)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$var2_vertex_color_degree,
+     vertex.size=(closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="all",normalized = T))*100,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="all",normalized = T)*1.5,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$var2_color_degree
+b<-V(var2_with_CAPS)$var2_vertex_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Closeness Degree Sized Normalized ALL - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median ALL Closennes:%.4f\nSD ALL Closennes: %.5f",
+             median(closeness(var2_with_CAPS, mode="all", weights = E(var2_with_CAPS)$var2, normalized = T)), 
+             sd(closeness(var2_with_CAPS, mode="all", weights = E(var2_with_CAPS)$var2, normalized = T))
+             )
+       )
+```
+
+##Closeness Normalized 
+
+###Saving to Igraph object
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_incloseness_n <- closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode = "in", normalized = T) %>% round(6)
+V(var2_with_CAPS)$var2_outcloseness_n <- closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode = "out", normalized = T) %>% round(6)
+V(var2_with_CAPS)$var2_totalcloseness_n <- closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode = "total", normalized = T) %>% round(6)
+```
+
+##Centralization Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_centr_closeness<- centralization.closeness(var2_with_CAPS)$res
+var2_centr_closeness<- centralization.closeness(var2_with_CAPS)$res
+var2_with_CAPS_centr_closeness_all<- centralization.closeness(var2_with_CAPS)
+```
+
+###Centralization
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_centr_closeness_all$centralization
+```
+
+###Theoretical Max
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_centr_closeness_all$theoretical_max
+```
+
+##Network Plotting Based On Centralization Closeness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+V(var2_with_CAPS)$var2_centr_closeness<- centralization.closeness(var2_with_CAPS)$res
+
+#Get Variable
+V(var2_with_CAPS)$var2_color_degree<-round(V(var2_with_CAPS)$var2_centr_closeness,6)
+
+#Creating brewer pallette
+var2_vertex_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var2_with_CAPS)$var2_color_degree)), "Spectral"))(
+            length(unique(V(var2_with_CAPS)$var2_color_degree)))
+
+#Saving as Vertex properties 
+V(var2_with_CAPS)$var2_vertex_color_degree<-
+  var2_vertex_color_degree[as.numeric(
+  cut(V(var2_with_CAPS)$var2_color_degree,
+      breaks=length(unique(V(var2_with_CAPS)$var2_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$var2_vertex_color_degree[edge.start],
+     edge.arrow.size=centralization.closeness(var2_with_CAPS)$res,
+     edge.width=E(var2_with_CAPS)$weight/10*mean(E(var2_with_CAPS)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$var2_vertex_color_degree,
+     vertex.size=centralization.closeness(var2_with_CAPS)$res*100,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=centralization.closeness(var2_with_CAPS)$res,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$var2_color_degree
+b<-V(var2_with_CAPS)$var2_vertex_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+  title("Network Centralization Closeness - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf(
+             "Median Centralization Closeness:%.4f\nSD Centralization Closeness: %.5f",
+             median(centralization.closeness(var2_with_CAPS)$res), 
+             sd(centralization.closeness(var2_with_CAPS)$res)
+             )
+       )
+```
+
+#Closeness Dinamic Table
+##Getting Closeness Measures
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_incloseness<- closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode = "in") %>% round(6)
+var2_with_CAPS_outcloseness<- closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode = "out") %>% round(6)
+var2_with_CAPS_totalcloseness<- closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode = "total") %>% round(6)
+var2_with_CAPS_incloseness_n<- closeness(var2_with_CAPS,weights = E(var2_with_CAPS)$var2, mode = "in", normalized = T) %>% round(6)
+var2_with_CAPS_outcloseness_n<- closeness(var2_with_CAPS,weights = E(var2_with_CAPS)$var2, mode = "out", normalized = T) %>% round(6)
+var2_with_CAPS_totalcloseness_n<- closeness(var2_with_CAPS,weights = E(var2_with_CAPS)$var2, mode = "total", normalized = T) %>% round(6)
+var2_centr_closeness <- centralization.closeness(var2_with_CAPS)$res %>% round(6)
+```
+
+##Creating a datagrame of measures
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_df_closseness <- data.frame(
+var2_with_CAPS_incloseness,
+var2_with_CAPS_outcloseness,
+var2_with_CAPS_totalcloseness,
+var2_with_CAPS_incloseness_n,
+var2_with_CAPS_outcloseness_n,
+var2_with_CAPS_totalcloseness_n,
+var2_centr_closeness) %>% round(6)
+
+#Adding type
+var2_with_CAPS_df_closseness <-cbind(var2_with_CAPS_df_closseness, V(var2_with_CAPS)$LABEL_COR)
+
+#Adding names
+names(var2_with_CAPS_df_closseness) <- c("In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized", "Total Closeness Normalized","Centralization Closeness","Type")
+
+#Ordering Variables
+var2_with_CAPS_df_closseness<-var2_with_CAPS_df_closseness[c("Type","In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized","Total Closeness Normalized", "Centralization Closeness")]
+```
+
+##General tabel - DT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_df_closseness, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_df_closseness, by=list(var2_with_CAPS_df_closseness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","In Closeness(M)", "Out Closeness(M)", "Total Closeness(M)","In Closeness Normalized(M)", "Out Closeness Normalized(M)", "Total Closeness Normalized(M)","Centralization Closeness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+
+##Aggregating data from previous table - median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_df_closseness, function(x) c(median=median(x))) 
+
+
+names(aggdata_median) <- c("Group","In Closeness(median)", "Out Closeness(median)", "Total Closeness(median)","In Closeness Normalized(median)", "Out Closeness Normalized(median)", "Total Closeness Normalized(median)", "Centralization Closeness(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+
+#Merging mean and median
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Closeness(M)", "In Closeness(median)", "Out Closeness(M)", "Out Closeness(median)", "Total Closeness(M)","Total Closeness(median)","In Closeness Normalized(M)", "In Closeness Normalized(median)", "Out Closeness Normalized(M)", "Out Closeness Normalized(median)", "Total Closeness Normalized(M)","Total Closeness Normalized(median)", "Centralization Closeness(M)","Centralization Closeness(median)")]
+```
+
+##Plotting final table with round for Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a datagrame of measures (Natureza Governamental)
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_df_closseness <- data.frame(
+var2_with_CAPS_incloseness,
+var2_with_CAPS_outcloseness,
+var2_with_CAPS_totalcloseness,
+var2_with_CAPS_incloseness_n,
+var2_with_CAPS_outcloseness_n,
+var2_with_CAPS_totalcloseness_n,
+var2_centr_closeness) %>% round(6)
+
+#Adding type
+var2_with_CAPS_df_closseness <-cbind(var2_with_CAPS_df_closseness, V(var2_with_CAPS)$TIPO1)
+
+#Adding names
+names(var2_with_CAPS_df_closseness) <- c("In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized", "Total Closeness Normalized","Centralization Closeness","Type")
+
+#Ordering Variables
+var2_with_CAPS_df_closseness<-var2_with_CAPS_df_closseness[c("Type","In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized","Total Closeness Normalized", "Centralization Closeness")]
+```
+
+##General tabel - DT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_df_closseness, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_df_closseness, by=list(var2_with_CAPS_df_closseness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","In Closeness(M)", "Out Closeness(M)", "Total Closeness(M)","In Closeness Normalized(M)", "Out Closeness Normalized(M)", "Total Closeness Normalized(M)","Centralization Closeness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+
+##Aggregating data from previous table - median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_df_closseness, function(x) c(median=median(x))) 
+
+names(aggdata_median) <- c("Group","In Closeness(median)", "Out Closeness(median)", "Total Closeness(median)","In Closeness Normalized(median)", "Out Closeness Normalized(median)", "Total Closeness Normalized(median)", "Centralization Closeness(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+
+#Merging mean and median
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Closeness(M)", "In Closeness(median)", "Out Closeness(M)", "Out Closeness(median)", "Total Closeness(M)","Total Closeness(median)","In Closeness Normalized(M)", "In Closeness Normalized(median)", "Out Closeness Normalized(M)", "Out Closeness Normalized(median)", "Total Closeness Normalized(M)","Total Closeness Normalized(median)", "Centralization Closeness(M)","Centralization Closeness(median)")]
+```
+
+##Plotting final table with round for Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Creating a datagrame of measures (Setores)
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_df_closseness <- data.frame(
+var2_with_CAPS_incloseness,
+var2_with_CAPS_outcloseness,
+var2_with_CAPS_totalcloseness,
+var2_with_CAPS_incloseness_n,
+var2_with_CAPS_outcloseness_n,
+var2_with_CAPS_totalcloseness_n,
+var2_centr_closeness) %>% round(6)
+
+#Adding type
+var2_with_CAPS_df_closseness <-cbind(var2_with_CAPS_df_closseness, V(var2_with_CAPS)$TIPO2)
+
+#Adding names
+names(var2_with_CAPS_df_closseness) <- c("In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized", "Total Closeness Normalized","Centralization Closeness","Type")
+
+#Ordering Variables
+var2_with_CAPS_df_closseness<-var2_with_CAPS_df_closseness[c("Type","In Closeness", "Out Closeness", "Total Closeness","In Closeness Normalized", "Out Closeness Normalized","Total Closeness Normalized", "Centralization Closeness")]
+```
+
+##General tabel - DT
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_df_closseness, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_df_closseness, by=list(var2_with_CAPS_df_closseness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","In Closeness(M)", "Out Closeness(M)", "Total Closeness(M)","In Closeness Normalized(M)", "Out Closeness Normalized(M)", "Total Closeness Normalized(M)","Centralization Closeness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+
+##Aggregating data from previous table - median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_df_closseness, function(x) c(median=median(x))) 
+
+names(aggdata_median) <- c("Group","In Closeness(median)", "Out Closeness(median)", "Total Closeness(median)","In Closeness Normalized(median)", "Out Closeness Normalized(median)", "Total Closeness Normalized(median)", "Centralization Closeness(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+
+#Merging mean and median
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","In Closeness(M)", "In Closeness(median)", "Out Closeness(M)", "Out Closeness(median)", "Total Closeness(M)","Total Closeness(median)","In Closeness Normalized(M)", "In Closeness Normalized(median)", "Out Closeness Normalized(M)", "Out Closeness Normalized(median)", "Total Closeness Normalized(M)","Total Closeness Normalized(median)", "Centralization Closeness(M)","Centralization Closeness(median)")]
+```
+
+##Plotting final table with round for Closseness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Betweenness - Number of shortest paths going through the actor σst(i)
+
+High betweenness centrality - vertex lies on many shortest paths. Probability that a communication from s
+to t will go through i - considering σst(i).
+
+Betweenness measures the number of shortest paths between nodes in the network that go through the node in question. Nodes with relatively high betweenness are likely to be key conduits of information flow across a network, and their removal may have a large impact on spreading phenomena.
+
+##Betweenness Centrality -(Vertex)
+
+Betweenness centrality based on a broker position connecting others or Number of geodesics that pass through the node or the edge. A higher number means an more important node.
+
+#Adding weight equal one for all analysis 
+```{r}
+E(var2_with_CAPS)$equalone<-1
+```
+
+###Saving objects
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_betweenness <- betweenness(var2_with_CAPS, weights = E(var2_with_CAPS)$equalone) %>% round(6)
+var2_with_CAPS_betweenness <- betweenness(var2_with_CAPS, weights = E(var2_with_CAPS)$equalone) %>% round(6)
+
+#Z Score 
+V(var2_with_CAPS)$var2_with_CAPS_betweenness_zscore <- (V(var2_with_CAPS)$var2_betweenness - mean(V(var2_with_CAPS)$var2_betweenness))/sd(V(var2_with_CAPS)$var2_betweenness)
+
+#Normalized
+V(var2_with_CAPS)$var2_with_CAPS_betweenness_norm <- (V(var2_with_CAPS)$var2_betweenness - min(V(var2_with_CAPS)$var2_betweenness))/max(V(var2_with_CAPS)$var2_betweenness)-min(V(var2_with_CAPS)$var2_betweenness)
+```
+###Betweenness Centrality - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_betweenness)
+sd(var2_with_CAPS_betweenness)
+```
+
+##Betweenness Centrality Weighted - (Vertex)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_betweenness_w <- betweenness(var2_with_CAPS, weights=E(var2_with_CAPS)$var2) %>% round(6)
+var2_betweenness_w <- betweenness(var2_with_CAPS, weights=E(var2_with_CAPS)$var2) %>% round(6)
+```
+### Descriptive Betweenness Centrality Weighted - (Vertex) - all
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_betweenness_w)
+sd(var2_betweenness_w)
+```
+##Centralization Betweenness
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_centr_betweenness <- centralization.betweenness(var2_with_CAPS)$res
+var2_centr_betweenness <- centralization.betweenness(var2_with_CAPS)
+```
+###Centralization
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_centr_betweenness$centralization
+```
+###Theoretical Max
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_centr_betweenness$theoretical_max
+```
+#Betweenness Vertex Centrality Dinamic Table
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Betweenness Vertex Centrality Measures Dinamic Table
+#Getting  Measures
+var2_with_CAPS_betweenness <- betweenness(var2_with_CAPS, weights=E(var2_with_CAPS)$equalone) %>% round(6)
+var2_betweenness_w <- betweenness(var2_with_CAPS, weights=E(var2_with_CAPS)$var2) %>% round(6)
+var2_centr_betweenness <- centralization.betweenness(var2_with_CAPS)$res %>% round(6)
+
+#Creating a dataframe of measures
+var2_with_CAPS_df_betweenness <- data.frame(var2_with_CAPS_betweenness,
+var2_betweenness_w,
+var2_centr_betweenness) %>% round(6)
+
+#Adding type
+var2_with_CAPS_df_betweenness <-cbind(var2_with_CAPS_df_betweenness, V(var2_with_CAPS)$LABEL_COR)
+
+#Adding names
+names(var2_with_CAPS_df_betweenness) <- c("Betweenness", "Betweenness Weighted", "Centralization Betweenness","Type")
+
+#Ordering Variables
+var2_with_CAPS_df_betweenness<-var2_with_CAPS_df_betweenness[c("Type","Betweenness", "Betweenness Weighted", "Centralization Betweenness")]
+```
+## General tabel for Betweenness
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_df_betweenness, filter = 'top')
+```
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_df_betweenness, by=list(var2_with_CAPS_df_betweenness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Betweenness(M)", "Betweenness Weighted(M)", "Centralization Betweenness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_df_betweenness, function(x) c(median=median(x)))  
+
+names(aggdata_median) <- c("Group","Betweenness(median)", "Betweenness Weighted(median)", "Centralization Betweenness(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+```
+##Merging mean and median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table<- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(1) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Betweenness(M)","Betweenness(median)","Betweenness Weighted(M)", "Betweenness Weighted(median)", "Centralization Betweenness(M)","Centralization Betweenness(median)")]
+```
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Betweenness Vertex Centrality Dinamic Table (Natureza Governamental)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Betweenness Vertex Centrality Measures Dinamic Table
+#Getting  Measures
+var2_with_CAPS_betweenness <- betweenness(var2_with_CAPS, weights=E(var2_with_CAPS)$equalone) %>% round(6)
+var2_betweenness_w <- betweenness(var2_with_CAPS, weights=E(var2_with_CAPS)$var2) %>% round(6)
+var2_centr_betweenness <- centralization.betweenness(var2_with_CAPS)$res %>% round(6)
+
+#Creating a dataframe of measures
+var2_with_CAPS_df_betweenness <- data.frame(var2_with_CAPS_betweenness,
+var2_betweenness_w,
+var2_centr_betweenness) %>% round(6)
+
+#Adding type
+var2_with_CAPS_df_betweenness <-cbind(var2_with_CAPS_df_betweenness, V(var2_with_CAPS)$TIPO1)
+
+#Adding names
+names(var2_with_CAPS_df_betweenness) <- c("Betweenness", "Betweenness Weighted", "Centralization Betweenness","Type")
+
+#Ordering Variables
+var2_with_CAPS_df_betweenness<-var2_with_CAPS_df_betweenness[c("Type","Betweenness", "Betweenness Weighted", "Centralization Betweenness")]
+```
+## General tabel for Betweenness
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_df_betweenness, filter = 'top')
+```
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_df_betweenness, by=list(var2_with_CAPS_df_betweenness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Betweenness(M)", "Betweenness Weighted(M)", "Centralization Betweenness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_df_betweenness, function(x) c(median=median(x)))  
+
+names(aggdata_median) <- c("Group","Betweenness(median)", "Betweenness Weighted(median)", "Centralization Betweenness(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+```
+##Merging mean and median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table<- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Betweenness(M)","Betweenness(median)","Betweenness Weighted(M)", "Betweenness Weighted(median)", "Centralization Betweenness(M)","Centralization Betweenness(median)")]
+```
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Betweenness Vertex Centrality Dinamic Table (Setores)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Betweenness Vertex Centrality Measures Dinamic Table
+#Getting  Measures
+var2_with_CAPS_betweenness <- betweenness(var2_with_CAPS, weights=E(var2_with_CAPS)$equalone) %>% round(6)
+var2_betweenness_w <- betweenness(var2_with_CAPS, weights=E(var2_with_CAPS)$var2) %>% round(1)
+var2_centr_betweenness <- centralization.betweenness(var2_with_CAPS)$res %>% round(6)
+
+#Creating a dataframe of measures
+var2_with_CAPS_df_betweenness <- data.frame(var2_with_CAPS_betweenness,
+var2_betweenness_w,
+var2_centr_betweenness) %>% round(6)
+
+#Adding type
+var2_with_CAPS_df_betweenness <-cbind(var2_with_CAPS_df_betweenness, V(var2_with_CAPS)$TIPO2)
+
+#Adding names
+names(var2_with_CAPS_df_betweenness) <- c("Betweenness", "Betweenness Weighted", "Centralization Betweenness","Type")
+
+#Ordering Variables
+var2_with_CAPS_df_betweenness<-var2_with_CAPS_df_betweenness[c("Type","Betweenness", "Betweenness Weighted", "Centralization Betweenness")]
+```
+## General tabel for Betweenness
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_df_betweenness, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_df_betweenness, by=list(var2_with_CAPS_df_betweenness$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Betweenness(M)", "Betweenness Weighted(M)", "Centralization Betweenness(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_df_betweenness, function(x) c(median=median(x)))  
+
+names(aggdata_median) <- c("Group","Betweenness(median)", "Betweenness Weighted(median)", "Centralization Betweenness(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+```
+##Merging mean and median
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table<- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(6) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Betweenness(M)","Betweenness(median)","Betweenness Weighted(M)", "Betweenness Weighted(median)", "Centralization Betweenness(M)","Centralization Betweenness(median)")]
+```
+##Plotting final table with round
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Plotting Betweenness Centrality - (Vertex)
+```{r}
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+#Plotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$color[edge.start],
+     edge.arrow.size=(betweenness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2)+1)/100000,
+     edge.width=E(var2_with_CAPS)$weight/10*mean(E(var2_with_CAPS)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$color,
+     vertex.size=betweenness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2 )/150,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=(betweenness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2)+1)/10000,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$LABEL_COR
+b<-V(var2_with_CAPS)$color
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+#Adding Title
+    title("Network Vertex Betweenness Sized - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels =    sprintf("Median Betweenness: %.2f\nSD Betweenness: %.2f",
+     median(betweenness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2)), 
+     sd(betweenness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2))
+             )
+       )
+```
+
+##Network Plotting Based On Centralization Betweenness
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Get Variable
+V(var2_with_CAPS)$var2_centr_betweenness<-(centralization.betweenness(var2_with_CAPS)$res)/100
+V(var2_with_CAPS)$var2_color_degree<-round(V(var2_with_CAPS)$var2_centr_betweenness,6)
+
+#Creating brewer pallette
+var2_vertex_color_degree<-
+  colorRampPalette(brewer.pal(length(unique(
+          V(var2_with_CAPS)$var2_color_degree)), "Spectral"))(
+            length(unique(V(var2_with_CAPS)$var2_color_degree)))
+
+#Saving as Vertex properties 
+V(var2_with_CAPS)$var2_vertex_color_degree<-
+  var2_vertex_color_degree[as.numeric(
+  cut(V(var2_with_CAPS)$var2_color_degree,
+      breaks=length(unique(V(var2_with_CAPS)$var2_color_degree))))]
+
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS, es=E(var2_with_CAPS), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS))
+maxC <- rep(Inf, vcount(var2_with_CAPS))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights = E(var2_with_CAPS)$weight)
+
+
+#PLotting
+plot(var2_with_CAPS, 
+     layout=co,
+     edge.color=V(var2_with_CAPS)$var2_vertex_color_degree[edge.start],
+     edge.arrow.size=closeness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2, mode="out"),
+     edge.width=E(var2_with_CAPS)$weight/10*mean(E(var2_with_CAPS)$weight),
+     edge.curved = TRUE,
+     vertex.color=V(var2_with_CAPS)$var2_vertex_color_degree,
+     vertex.size=(centralization.betweenness(var2_with_CAPS)$res+1)/100,
+     vertex.frame.color="white",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS,"LABEL_COR"),
+     vertex.label.cex=(centralization.betweenness(var2_with_CAPS)$res + 1)/10000,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS)$var2_color_degree
+b<-V(var2_with_CAPS)$var2_vertex_color_degree
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+e<-e[order(e$a,decreasing=T),] 
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+  #Adding Title
+  title("Network Centralization Betweenness - fuull_no_zero_fancy", sub = "Source: from authors ")
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels = sprintf("Median Betweenness:%.0f\nSDBetweenness: %.0f",
+     median(betweenness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2)), 
+     sd(betweenness(var2_with_CAPS, weights = E(var2_with_CAPS)$var2))
+             )
+       )
+```
+
+#Reciprocity Default
+Reciprocity Default - Proportion of mutual connections - probability that hte opposite counterpart of a directed graph is also included
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+reciprocity(var2_with_CAPS, mode="default")
+```
+
+#Reciprocity Ratio
+Reciprocity Ratio - Probability  of mutual connections between a vertex pair - if we know - probability that hte opposite counterpart of a directed graph is also included in the 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+reciprocity(var2_with_CAPS, mode="ratio")
+```
+
+#Dyad Census
+A dyad consists of an unordered pair of actors and links that exist between two actors of the pair classified by mutal non-mutual and no connection in a directed graphs
+
+Dyads are 2-subgraphs where a subgraph is a subset of actors taken from the complete set of network actors and all links
+between them. See more here <http://file.scirp.org/pdf/SN_2013012915270187.pdf>
+
+##Dyad Census 
+Number of pairs with mutual connections "mut" and number of pairs with non-mutual connections "asym"
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dyad.census_var2_with_CAPS<-dyad.census(var2_with_CAPS)
+```
+##Mutual connections.
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dyad.census_var2_with_CAPS_mut<-dyad.census_var2_with_CAPS$mut
+dyad.census_var2_with_CAPS_mut
+```
+##Non-mutual connections.
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dyad.census_var2_with_CAPS_asym<-dyad.census_var2_with_CAPS$asym
+dyad.census_var2_with_CAPS_asym
+```
+##No connection between them.
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+dyad.census_var2_with_CAPS_null<-dyad.census_var2_with_CAPS$null
+dyad.census_var2_with_CAPS_null
+```
+#Triad Census - Check this out in order to understand triad lables
+
+The studies about transitivity in social networks led Holland and Leinhardt (1975) to propose that the local structure in social networks can be expressed by the triad census or triad count, the numbers of triads of any kinds.
+
+You can see more here:
+<http://www.stats.ox.ac.uk/~snijders/Trans_Triads_ha.pdf>
+
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Triad Census 
+tc_var2_with_CAPS <- triad.census(var2_with_CAPS)
+
+#Triad Census Label 
+census_labels = c('T.003',
+                  'T.012',
+                  'T.102',
+                  'T.021D',
+                  'T.021U',
+                  'T.021C',
+                  'T.111D',
+                  'T.111U',
+                  'T.030T',
+                  'T.030C',
+                  'T.201',
+                  'T.120D',
+                  'T.120U',
+                  'T.120C',
+                  'T.210',
+                  'T.300')
+
+ordering = c('1',
+                  '2',
+                  '3',
+                  '4',
+                  '5',
+                  '6',
+                  '7',
+                  '8',
+                  '13',
+                  '10',
+                  '9',
+                  '14',
+                  '15',
+                  '11',
+                  '12',
+                  '16')
+
+#Saving in a dataframe for further studies
+triad_df_var2_with_CAPS <- data.frame(census_labels,tc_var2_with_CAPS)
+write.csv(triad_df_var2_with_CAPS, "~/SNArRDJF/Banco Redes R/var2_with_CAPS_complet_triads.csv")
+```
+##Triad Census Types 
+The following labels gives the 16 different triads for directed graphs. The coding refers to the numbers of mutual, asymmetric, and null dyads, with a further identifying letter: Up, Down, Cyclical, Transitive.
+
+E.g., 1-2-0-D has *1* mutual, *2* asymmetric, *0* null dyads, and the *Down* orientation.
+
+###Describing triads
+
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+triad_df_var2_with_CAPS
+```
+
+###Triads Tables Recoding
+```{r}
+#Recoding different types of triads 
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.003"]<-"Vacuously Transitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.012"]<-"Vacuously Transitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.102"]<-"Vacuously Transitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.021D"]<-"Vacuously Transitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.021U"]<-"Vacuously Transitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.021C"]<-"Intransitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.111D"]<-"Intransitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.111U"]<-"Intransitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.030T"]<-"Transitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.030C"]<-"Intransitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.201"]<-"Intransitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.120D"]<-"Transitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.120U"]<-"Transitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.120C"]<-"Intransitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.210"]<-"Intransitive"
+triad_df_var2_with_CAPS$type[triad_df_var2_with_CAPS$census_labels=="T.300"]<-"Transitive"
+```
+
+Graphical Ilustration 
+
+![<http://knoesis.wright.edu/sites/default/files/icnc15.pdf>](figures/img.png)
+
+###Triads Tables
+```{r}
+datatable(triad_df_var2_with_CAPS)
+```
+
+#Transitivity - clustering coefficient
+
+##Transitivity Global
+Socialnetwork is treated as an undirected network global - ratio of triangles (direction disregarded) to connected triples.
+
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+transitivity(var2_with_CAPS, type="global")
+```
+
+# Transitivity Local
+Ratio of triangles to connected triples each vertex is part of.
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_transitivity_local<-transitivity(var2_with_CAPS, type="local") 
+var2_with_CAPS_transitivity_local<-transitivity(var2_with_CAPS, type="local") #local - ratio of triangles to connected triples each vertex is part of.
+```
+#Descriptive Statistics for Local Transitivity by Vertex 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_transitivity_local[which(var2_with_CAPS_transitivity_local != Inf)])
+sd(var2_with_CAPS_transitivity_local[which(var2_with_CAPS_transitivity_local != Inf)])
+```
+
+#Barrat's Weighted Transitivity by Edges (Barrat's)
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+V(var2_with_CAPS)$var2_transitivity_barrat<-transitivity(var2_with_CAPS, weights=E(var2_with_CAPS)$weight, type="barrat")
+
+var2_with_CAPS_transitivity_barrat<-transitivity(var2_with_CAPS, weights=E(var2_with_CAPS)$weight, type="barrat")
+```
+
+#Descriptive Statistics for Barrat Weighted Transitivity by Vertex 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_transitivity_barrat[which(var2_with_CAPS_transitivity_barrat != Inf)])
+sd(var2_with_CAPS_transitivity_barrat[which(var2_with_CAPS_transitivity_barrat != Inf)])
+```
+
+#Transitivity  Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Getting  Measures
+
+var2_with_CAPS_transitivity_local<-transitivity(var2_with_CAPS, type="local") %>% round(3)
+
+var2_with_CAPS_transitivity_barrat<-transitivity(var2_with_CAPS, weights=E(var2_with_CAPS)$weight, type="barrat") %>% round(3)
+
+#Creating a datagrame of measures
+var2_with_CAPS_transitivity_df <- data.frame(var2_with_CAPS_transitivity_local,var2_with_CAPS_transitivity_barrat) %>% round(3)
+```
+
+#Transitivity  Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_transitivity_df <-cbind(var2_with_CAPS_transitivity_df, V(var2_with_CAPS)$LABEL_COR)
+
+#Adding names
+names(var2_with_CAPS_transitivity_df) <- c("Local", "Barrat's Weighted","Type")
+
+#Ordering Variables
+var2_with_CAPS_transitivity_df<-var2_with_CAPS_transitivity_df[c("Type", "Local", "Barrat's Weighted")]
+```
+## General tabel - DT 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_transitivity_df, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_transitivity_df, by=list(var2_with_CAPS_transitivity_df$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Local(M)", "Barrat's Weighted(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_transitivity_df, function(x) c(median=median(x))) 
+
+names(aggdata_median) <- c("Group","Local(median)", "Barrat's Weighted(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+```
+##Merging mean and median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(3) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Local(M)","Local(median)", "Barrat's Weighted(M)","Barrat's Weighted(median)")]
+```
+##Final table with round - Transitivity
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Transitivity  Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Getting  Measures
+
+var2_with_CAPS_transitivity_local<-transitivity(var2_with_CAPS, type="local") %>% round(3)
+
+var2_with_CAPS_transitivity_barrat<-transitivity(var2_with_CAPS, weights=E(var2_with_CAPS)$weight, type="barrat") %>% round(3)
+
+#Creating a datagrame of measures
+var2_with_CAPS_transitivity_df <- data.frame(var2_with_CAPS_transitivity_local,var2_with_CAPS_transitivity_barrat) %>% round(3)
+```
+
+#Transitivity  Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_transitivity_df <-cbind(var2_with_CAPS_transitivity_df, V(var2_with_CAPS)$TIPO1)
+
+#Adding names
+names(var2_with_CAPS_transitivity_df) <- c("Local", "Barrat's Weighted","Type")
+
+#Ordering Variables
+var2_with_CAPS_transitivity_df<-var2_with_CAPS_transitivity_df[c("Type", "Local", "Barrat's Weighted")]
+```
+## General tabel - DT 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_transitivity_df, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_transitivity_df, by=list(var2_with_CAPS_transitivity_df$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Local(M)", "Barrat's Weighted(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_transitivity_df, function(x) c(median=median(x))) 
+
+names(aggdata_median) <- c("Group","Local(median)", "Barrat's Weighted(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+```
+##Merging mean and median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(3) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Local(M)","Local(median)", "Barrat's Weighted(M)","Barrat's Weighted(median)")]
+```
+##Final table with round - Transitivity
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Transitivity  Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Getting  Measures
+
+var2_with_CAPS_transitivity_local<-transitivity(var2_with_CAPS, type="local") %>% round(3)
+
+var2_with_CAPS_transitivity_barrat<-transitivity(var2_with_CAPS, weights=E(var2_with_CAPS)$weight, type="barrat") %>% round(3)
+
+#Creating a datagrame of measures
+var2_with_CAPS_transitivity_df <- data.frame(var2_with_CAPS_transitivity_local,var2_with_CAPS_transitivity_barrat) %>% round(3)
+```
+
+#Transitivity  Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+var2_with_CAPS_transitivity_df <-cbind(var2_with_CAPS_transitivity_df, V(var2_with_CAPS)$TIPO2)
+
+#Adding names
+names(var2_with_CAPS_transitivity_df) <- c("Local", "Barrat's Weighted","Type")
+
+#Ordering Variables
+var2_with_CAPS_transitivity_df<-var2_with_CAPS_transitivity_df[c("Type", "Local", "Barrat's Weighted")]
+```
+## General tabel - DT 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_transitivity_df, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_transitivity_df, by=list(var2_with_CAPS_transitivity_df$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Local(M)", "Barrat's Weighted(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_transitivity_df, function(x) c(median=median(x))) 
+
+names(aggdata_median) <- c("Group","Local(median)", "Barrat's Weighted(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+```
+##Merging mean and median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(3) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[c("Group","Local(M)","Local(median)", "Barrat's Weighted(M)","Barrat's Weighted(median)")]
+```
+##Final table with round - Transitivity
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+
+
+#Distances and paths
+
+Defined as the shortest distance between each pair of nodes in the network (in both directions for directed graphs).
+
+##Average path length between any two given nodes
+
+Calculates the average path length in a graph, by calculating the shortest paths between all pairs of vertices (both ways for directed graphs). 
+
+This function does not consider edge weights currently and uses a breadth-first search.
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+mean_distance(var2_with_CAPS, directed=T, unconnected = T)
+```
+##Shortest Paths
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Shortest Paths
+var2_with_CAPS_sp_in <- shortest.paths(var2_with_CAPS, mode='in', weights=E(var2_with_CAPS)$var2) #in
+
+var2_with_CAPS_sp_out <- shortest.paths(var2_with_CAPS, mode='out', weights=E(var2_with_CAPS)$var2) # out
+
+var2_with_CAPS_sp_all <- shortest.paths(var2_with_CAPS, mode='all', weights=E(var2_with_CAPS)$var2) # all
+```
+##Descriptive Shortest Paths - IN
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_sp_in[which(var2_with_CAPS_sp_in != Inf)])
+sd(var2_with_CAPS_sp_in[which(var2_with_CAPS_sp_in != Inf)])
+```
+##Descriptive  Shortest Paths - OUT
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_sp_out[which(var2_with_CAPS_sp_out != Inf)])
+sd(var2_with_CAPS_sp_out[which(var2_with_CAPS_sp_out != Inf)])
+```
+
+##Descriptive  Shortest Paths - ALL
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+summary(var2_with_CAPS_sp_all[which(var2_with_CAPS_sp_all != Inf)])
+sd(var2_with_CAPS_sp_all[which(var2_with_CAPS_sp_all != Inf)])
+```
+
+#Length of all shortest paths in the graph:
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#All shortest paths 
+distances_dist_all_var2_with_CAPS<-distances(var2_with_CAPS, mode="all", weights=E(var2_with_CAPS)$var2)
+#distances_sp_all_var2_with_CAPS
+
+distances_dist_all_var2_with_CAPS[distances_dist_all_var2_with_CAPS=="Inf"]<-NA
+
+#Mean Reachbility by Vertex
+distances_sp_all_var2_with_CAPS_vec <- vector()
+for (i in 1:vcount(var2_with_CAPS)) {
+    distances_sp_all_var2_with_CAPS_vec[i] <- 
+    mean(distances_dist_all_var2_with_CAPS[i,],na.rm=T)
+}
+#Adding to igraph object
+V(var2_with_CAPS)$var2_sp_all<-distances_sp_all_var2_with_CAPS_vec
+```
+
+#In shortest paths 
+```{r}
+distances_dist_in_var2_with_CAPS<-distances(var2_with_CAPS, mode="in",weights=E(var2_with_CAPS)$var2)
+#distances_sp_in_var2_with_CAPS
+
+distances_dist_in_var2_with_CAPS[distances_dist_in_var2_with_CAPS=="Inf"]<-NA
+
+#Mean Reachbility by Vertex
+distances_sp_in_var2_with_CAPS_vec <- vector()
+for (i in 1:vcount(var2_with_CAPS)) {
+    distances_sp_in_var2_with_CAPS_vec[i] <- mean(distances_dist_in_var2_with_CAPS[i,], na.rm=T)
+}
+
+#Adding to igraph object
+V(var2_with_CAPS)$var2_sp_in<-distances_sp_in_var2_with_CAPS_vec
+```
+
+#Out shortest paths 
+```{r}
+distances_dist_out_var2_with_CAPS<-distances(var2_with_CAPS, mode="out", weights=E(var2_with_CAPS)$var2)
+
+distances_dist_out_var2_with_CAPS[distances_dist_out_var2_with_CAPS=="Inf"]<-NA
+
+#Mean Reachbility by Vertex
+distances_sp_out_var2_with_CAPS_vec <- vector()
+for (i in 1:vcount(var2_with_CAPS)) {
+    distances_sp_out_var2_with_CAPS_vec[i] <- 
+    mean(distances_dist_out_var2_with_CAPS[i,], na.rm = T)
+}
+
+#Adding to igraph object
+V(var2_with_CAPS)$var2_sp_out<-distances_sp_out_var2_with_CAPS_vec
+```
+
+#Reachbility Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+#Creating a datagrame of measures
+var2_with_CAPS_shortpath_df <- data.frame(distances_sp_in_var2_with_CAPS_vec, distances_sp_out_var2_with_CAPS_vec, distances_sp_all_var2_with_CAPS_vec) %>% round(3)
+
+#Adding type
+var2_with_CAPS_shortpath_df <-cbind(var2_with_CAPS_shortpath_df, V(var2_with_CAPS)$LABEL_COR)
+
+#Adding names
+names(var2_with_CAPS_shortpath_df) <- c("Short Path IN", "Short Path OUT","Short Path ALL","Type") 
+
+#Ordering Variables
+var2_with_CAPS_shortpath_df<-var2_with_CAPS_shortpath_df[c("Type", "Short Path IN", "Short Path OUT","Short Path ALL")]
+```
+## General tabel - DT 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_shortpath_df, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_shortpath_df, by=list(var2_with_CAPS_shortpath_df$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Short Path IN(M)", "Short Path OUT(M)","Short Path ALL(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_shortpath_df, function(x) c(median=median(x)))
+
+names(aggdata_median) <- c("Group", "Short Path IN(median)", "Short Path OUT(median)","Short Path ALL(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+```
+##Merging mean and median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(3) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[,c("Group","Short Path IN(M)","Short Path IN(median)","Short Path OUT(M)","Short Path OUT(median)","Short Path ALL(M)","Short Path ALL(median)")]
+```
+##Final table with round - Short Path
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Reachbility Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+#Creating a datagrame of measures
+var2_with_CAPS_shortpath_df <- data.frame(distances_sp_in_var2_with_CAPS_vec, distances_sp_out_var2_with_CAPS_vec, distances_sp_all_var2_with_CAPS_vec) %>% round(3)
+
+#Adding type
+var2_with_CAPS_shortpath_df <-cbind(var2_with_CAPS_shortpath_df, V(var2_with_CAPS)$TIPO1)
+
+#Adding names
+names(var2_with_CAPS_shortpath_df) <- c("Short Path IN", "Short Path OUT","Short Path ALL","Type") 
+
+#Ordering Variables
+var2_with_CAPS_shortpath_df<-var2_with_CAPS_shortpath_df[c("Type", "Short Path IN", "Short Path OUT","Short Path ALL")]
+```
+## General tabel - DT 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_shortpath_df, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_shortpath_df, by=list(var2_with_CAPS_shortpath_df$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Short Path IN(M)", "Short Path OUT(M)","Short Path ALL(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_shortpath_df, function(x) c(median=median(x)))
+
+names(aggdata_median) <- c("Group", "Short Path IN(median)", "Short Path OUT(median)","Short Path ALL(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+```
+##Merging mean and median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(3) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[,c("Group","Short Path IN(M)","Short Path IN(median)","Short Path OUT(M)","Short Path OUT(median)","Short Path ALL(M)","Short Path ALL(median)")]
+```
+##Final table with round - Short Path
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+#Reachbility Measures Dinamic Table
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+
+#Creating a datagrame of measures
+var2_with_CAPS_shortpath_df <- data.frame(distances_sp_in_var2_with_CAPS_vec, distances_sp_out_var2_with_CAPS_vec, distances_sp_all_var2_with_CAPS_vec) %>% round(3)
+
+#Adding type
+var2_with_CAPS_shortpath_df <-cbind(var2_with_CAPS_shortpath_df, V(var2_with_CAPS)$TIPO2)
+
+#Adding names
+names(var2_with_CAPS_shortpath_df) <- c("Short Path IN", "Short Path OUT","Short Path ALL","Type") 
+
+#Ordering Variables
+var2_with_CAPS_shortpath_df<-var2_with_CAPS_shortpath_df[c("Type", "Short Path IN", "Short Path OUT","Short Path ALL")]
+```
+## General tabel - DT 
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(var2_with_CAPS_shortpath_df, filter = 'top')
+```
+
+##Aggregating data from previous table - mean
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_mean <-aggregate(var2_with_CAPS_shortpath_df, by=list(var2_with_CAPS_shortpath_df$Type), FUN=mean, na.rm=TRUE)
+
+names(aggdata_mean) <- c("Group","Type","Short Path IN(M)", "Short Path OUT(M)","Short Path ALL(M)")
+  
+#Removing Type variable
+aggdata_mean<-aggdata_mean[,-c(2)]
+```
+##Aggregating data from previous table - median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+aggdata_median <-aggregate(. ~ Type, var2_with_CAPS_shortpath_df, function(x) c(median=median(x)))
+
+names(aggdata_median) <- c("Group", "Short Path IN(median)", "Short Path OUT(median)","Short Path ALL(median)")
+
+#Removing Type variable
+#aggdata_median<-aggdata_median[,-c(2)]
+```
+##Merging mean and median
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+total_table <- merge(aggdata_mean,aggdata_median,by="Group")
+
+#Rounding
+Group<-total_table[,c(1)] #Keeping group
+total_table<-total_table[,-c(1)] %>% round(3) #Rouding
+total_table<-cbind(Group,total_table) #Binding toghter
+
+#Organizing Variabels
+total_table<-total_table[,c("Group","Short Path IN(M)","Short Path IN(median)","Short Path OUT(M)","Short Path OUT(median)","Short Path ALL(M)","Short Path ALL(median)")]
+```
+##Final table with round - Short Path
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+datatable(total_table, filter = 'top')
+```
+
+##Histogram from shortest path length between each pair of vertices. 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+sp<-distance_table(var2_with_CAPS, directed = TRUE)
+short_paths<-c(sp$unconnected, sp$res)
+labels<-c("unconnected", "one", "two","three", "four", "five", "six")
+sphist<-as.data.frame(cbind(labels, short_paths))
+names(sphist)<-c("Short Paths Length - Vertex Pairs","Count")
+datatable(sphist)
+```
+
+
+##Simplify Graph - removing loops and duble edges 
+```{r, echo=T, message=FALSE, warning=FALSE}
+#var2_with_CAPS_u<-simplify(var2_with_CAPS) #Simplify
+
+var2_with_CAPS_u<-as.undirected(var2_with_CAPS, mode="collapse",edge.attr.comb=list(weight="mean","ignore"))
+```
+
+#Find cliques (complete subgraphs of an undirected graph)
+Graph clique is a subset of vertices of a graph such that every two vertices in the clique are adjacent. - ***To check****
+
+##Number of cliques - subgraphs
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+cliques_var2_with_CAPS_u<-cliques(var2_with_CAPS_u) # list of cliques 
+length(cliques_var2_with_CAPS_u)
+```
+##Number of cliques by cliques size
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+cliques_var2_with_CAPS_u_size<-sapply(cliques(var2_with_CAPS_u), length) 
+cliques_var2_with_CAPS_u_size_t<-table(cliques_var2_with_CAPS_u_size)
+cliques_var2_with_CAPS_u_size_t
+```
+
+##Cliques Bar Plot Sizes Frequency
+```{r}
+barplot(cliques_var2_with_CAPS_u_size_t)
+title(main = "Cliques Sizes Frequency - Bar Plot fuull_no_zero_fancy", font.main = 4)
+```
+
+##Size of largest clique 
+A maximum clique is a clique that cannot be extended by including one more adjacent vertex (not included in larger one). 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+clique_num(var2_with_CAPS_u)
+```
+##Number of maximal cliques
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+count_max_cliques(var2_with_CAPS_u)
+```
+##Finding of largest cliques
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+largest_cliques<-largest_cliques(var2_with_CAPS_u) # cliques with max number of nodes
+length(largest_cliques)
+```
+
+##Plotting the largest cliques - important to consider connectivite 
+```{r, echo=TRUE, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+#Coloring largest clique as gold and others one as gray
+vcol <- rep("grey80", vcount(var2_with_CAPS_u))
+vcol[unlist(largest_cliques(var2_with_CAPS_u))] <- "gold"
+
+#Saving gray and gold as igraph attribute
+V(var2_with_CAPS_u)$vcol<-vcol
+
+#Saving labels to display as legend
+V(var2_with_CAPS_u)$vcollabel[V(var2_with_CAPS_u)$vcol=="gold"]<-"Largets Clique"
+V(var2_with_CAPS_u)$vcollabel [V(var2_with_CAPS_u)$vcol=="grey80"]<-"Others"
+```
+##Plotting Clique Size
+```{r}
+set.seed(123)
+#Plotting based only on degree measures 
+edge.start <- ends(var2_with_CAPS_u, es=E(var2_with_CAPS_u), names=F)[,1]
+
+# Fixing ego
+minC <- rep(-Inf, vcount(var2_with_CAPS_u))
+maxC <- rep(Inf, vcount(var2_with_CAPS_u))
+minC[1] <- maxC[1] <- 0
+co <- layout_with_fr(var2_with_CAPS_u, niter=10^4, minx=minC, maxx=maxC,miny=minC, maxy=maxC, weights=E(var2_with_CAPS_u)$var2_with_CAPS)
+
+#Plotting
+plot(var2_with_CAPS_u, 
+     layout=co,
+     edge.color=V(var2_with_CAPS_u)$vcol[edge.start],
+     #edge.arrow.size=E(var2_with_CAPS_u)$var2_with_CAPS/2000*mean(E(var2_with_CAPS_u)$var2_with_CAPS),
+     #edge.width=E(var2_with_CAPS_u)$var2_with_CAPS/20*mean(E(var2_with_CAPS_u)$var2_with_CAPS),
+     edge.curved = TRUE,
+     vertex.color=vcol,
+     vertex.size=log(degree(var2_with_CAPS_u)+2)*10,
+     vertex.frame.color="black",
+     vertex.label.color="black",
+     vertex.label=get.vertex.attribute(var2_with_CAPS_u,"LABEL_COR"),
+     vertex.label.cex=log(degree(var2_with_CAPS_u)+2)/10,
+     vertex.label.dist=0,
+     rescale=F,
+     xlim=range(co[,1]), 
+     ylim=range(co[,2])
+     )
+axis(1)
+axis(2)
+
+#Solving Problems with legend rendering 
+a<-V(var2_with_CAPS_u)$vcollabel
+b<-V(var2_with_CAPS_u)$vcol
+c<-table(a,b)
+d<-as.data.frame(c)
+e<-subset(d, d$Freq>0)
+f<-t(e$a)
+g<-t(e$b)
+
+#Adding Legend
+legend(x=range(co[,1])[2], 
+       y=range(co[,2])[2],
+       legend=as.character(f),
+       pch=21,
+       col = "#777777", 
+       pt.bg=as.character(g),
+       pt.cex=2,
+       bty="n", 
+       ncol=1,
+       lty=1,
+       cex = .3)
+
+
+#Adding Title
+  title("Network Vertex Degree Sized - classfied by largest clique vs. others", sub = "Source: from authors ")  
+  text( 
+    x=range(co[,1])[1],
+    y=range(co[,2])[1], 
+      labels =       sprintf("Size of largest clique: %.1f\nNumber of maximal cliques: %.1f",
+     clique_num(var2_with_CAPS_u), 
+     count_max_cliques(var2_with_CAPS_u)
+             )
+       )
+```
+
+
+```{r}
+# Re-generate dataframes for both nodes and edges, now containing
+# calculated network attributes
+var2_with_CAPS_node_list <- get.data.frame(var2_with_CAPS, what = "vertices")
+
+#Write Node List
+write.csv(var2_with_CAPS_node_list, "~/SNArRDJF/Tese_Pedro/Completa/Banco/var2_with_CAPS_node_list_df.csv")
+
+# Determine a community for each edge. If two nodes belong to the
+# same community, label the edge with that community. If not,
+# the edge community value is 'NA'
+var2_with_CAPS_edge_list <- get.data.frame(var2_with_CAPS, what = "edges")
+
+#Write Node List
+write.csv(var2_with_CAPS_edge_list, "~/SNArRDJF/Tese_Pedro/Completa/Banco/var2_with_CAPS_edge_list.csv")
+
+#Write Node List
+write.csv(var2_with_CAPS_edge_list, "~/SNArRDJF/Tese_Pedro/Completa/Banco/var2_with_CAPS_edge_list.csv")
+
+```
+
+
+#Saving objects with new variables and changes
+```{r, echo=T, fig.height=12, fig.width=12, message=FALSE, warning=FALSE}
+save.image("~/SNArRDJF/Robject/var2_with_CAPS_dataframe.RData")  
+```

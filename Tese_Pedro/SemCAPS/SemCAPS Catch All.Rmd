@@ -1,0 +1,104 @@
+---
+title: "Catch'em all"
+author: "Leonardo Martins"
+date: "24 de julho de 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+Disseminating the code
+
+```{r}
+#Breeding Reports Like Crazy
+library(rmarkdown)
+require(dplyr)
+```
+
+
+```{r}
+#It only works in Unix (Linux or OSX) - Using Stream Editor from Bash
+x<-"sed -e 's/full_no_zero/x2/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/Analise_sem_CAPS.Rmd > ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/x2_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var0/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/Analise_sem_CAPS.Rmd > ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var0_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var1/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/Analise_sem_CAPS.Rmd > ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var1_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var2/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/Analise_sem_CAPS.Rmd > ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var2_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var3/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/Analise_sem_CAPS.Rmd > ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var3_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var4/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/Analise_sem_CAPS.Rmd > ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var4_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var5/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/Analise_sem_CAPS.Rmd > ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var5_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/full_no_zero/var6/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/Analise_sem_CAPS.Rmd > ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var6_analise_sem_CAPS.Rmd" %>% system()
+
+```
+
+#Breeding Fancy Names Reports Like Crazy
+```{r}
+x<-"sed -e 's/fuull_no_zero_fancy/1.1 - REDE COMPLETA (full_no_zero_without_CAPS)/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/Analise_sem_CAPS.Rmd >  ~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/1.1_REDE_COMPLETA_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/1.2 - ALGUM RELACIONAMENTO (x2)/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/x2_analise_sem_CAPS.Rmd >  ~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/1.2_REDE_COMPLETA_ALGUM_RELACIONAMENTO_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/2_RELACIONAMENTO FORMAL (var0)/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var0_analise_sem_CAPS.Rmd >  ~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/2_RELACIONAMENTO_FORMAL_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/3_REFERENCIA DE ENVIO (var1)/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var1_analise_sem_CAPS.Rmd >  ~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/3_REFERENCIA_DE_ENVIO_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/4_REFERENCIA DE RECEBIMENTO CONTRAREFERENCIA (var2)/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var2_analise_sem_CAPS.Rmd >  ~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/4_REFERENCIA_DE_RECEBIMENTO_CONTRAREFERENCIA_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/5_COORDENAÇÃO CONJUNTA DE CASOS (var3)/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var3_analise_sem_CAPS.Rmd >  ~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/5_COORDENAÇÃO_CONJUNTA_DE_CASOS_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/6_PROGRAMAS EM CONJUNTO (var4)/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var4_analise_sem_CAPS.Rmd >  ~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/6_PROGRAMAS_EM_CONJUNTO_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/7_OFERTA DE TREINAMENTOS CAPACITAÇÕES (var5)/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var5_analise_sem_CAPS.Rmd >  ~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/7_OFERTA_DE_TREINAMENTOS_CAPACITAÇÕES_analise_sem_CAPS.Rmd" %>% system()
+
+x<-"sed -e 's/fuull_no_zero_fancy/8_RECEBER TREINAMENTOS CAPACITAÇÕES (var6)/g' ~/SNArRDJF/Tese_Pedro/SemCAPS/Script_Base/var6_analise_sem_CAPS.Rmd >  ~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/8_RECEBER_TREINAMENTOS_CAPACITAÇÕES_analise_sem_CAPS.Rmd" %>% system()
+
+```
+
+#Redering New Networks 
+```{r}
+render("~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/1.1_REDE_COMPLETA_analise_sem_CAPS.Rmd","all")
+render("~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/1.2_REDE_COMPLETA_ALGUM_RELACIONAMENTO_analise_sem_CAPS.Rmd","all")
+render("~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/2_RELACIONAMENTO_FORMAL_analise_sem_CAPS.Rmd" ,"all")
+render("~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/3_REFERENCIA_DE_ENVIO_analise_sem_CAPS.Rmd" ,"all")
+render("~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/4_REFERENCIA_DE_RECEBIMENTO_CONTRAREFERENCIA_analise_sem_CAPS.Rmd" ,"all")
+render("~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/5_COORDENAÇÃO_CONJUNTA_DE_CASOS_analise_sem_CAPS.Rmd" ,"all")
+render("~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/6_PROGRAMAS_EM_CONJUNTO_analise_sem_CAPS.Rmd" ,"all")
+render("~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/7_OFERTA_DE_TREINAMENTOS_CAPACITAÇÕES_analise_sem_CAPS.Rmd" ,"all")
+render("~/SNArRDJF/Tese_Pedro/SemCAPS/Scripts_Finais/8_RECEBER_TREINAMENTOS_CAPACITAÇÕES_analise_sem_CAPS.Rmd" ,"all")
+```
+
+
+```{r}
+#Binding CSV files into unique one
+full_no_zero_without_CAPS_node_list_df <- read.csv("~/SNArRDJF/Tese_Pedro/SemCAPS/Banco/full_no_zero_without_CAPS_node_list_df.csv")
+x2_without_CAPS_node_list_df <- read.csv("~/SNArRDJF/Tese_Pedro/SemCAPS/Banco/x2_without_CAPS_node_list_df.csv")
+var0_without_CAPS_node_list_df <- read.csv("~/SNArRDJF/Tese_Pedro/SemCAPS/Banco/var0_without_CAPS_node_list_df.csv")
+var1_without_CAPS_node_list_df <- read.csv("~/SNArRDJF/Tese_Pedro/SemCAPS/Banco/var1_without_CAPS_node_list_df.csv")
+var2_without_CAPS_node_list_df <- read.csv("~/SNArRDJF/Tese_Pedro/SemCAPS/Banco/var2_without_CAPS_node_list_df.csv")
+var3_without_CAPS_node_list_df <- read.csv("~/SNArRDJF/Tese_Pedro/SemCAPS/Banco/var3_without_CAPS_node_list_df.csv")
+var4_without_CAPS_node_list_df <- read.csv("~/SNArRDJF/Tese_Pedro/SemCAPS/Banco/var4_without_CAPS_node_list_df.csv")
+var5_without_CAPS_node_list_df <- read.csv("~/SNArRDJF/Tese_Pedro/SemCAPS/Banco/var5_without_CAPS_node_list_df.csv")
+
+#Removing commun variables
+x2_without_CAPS_node_list_df<-x2_without_CAPS_node_list_df[,c(143:170)]
+var0_without_CAPS_node_list_df<-var0_without_CAPS_node_list_df[,c(143:170)]
+var1_without_CAPS_node_list_df<-var1_without_CAPS_node_list_df[,c(143:170)]
+var2_without_CAPS_node_list_df<-var2_without_CAPS_node_list_df[,c(143:170)]
+var3_without_CAPS_node_list_df<-var3_without_CAPS_node_list_df[,c(143:170)]
+var4_without_CAPS_node_list_df<-var4_without_CAPS_node_list_df[,c(143:170)]
+var5_without_CAPS_node_list_df<-var5_without_CAPS_node_list_df[,c(143:170)]
+
+#Binding
+final_without_CAPS_all_node_list_df<-cbind(full_no_zero_without_CAPS_node_list_df, x2_without_CAPS_node_list_df, var0_without_CAPS_node_list_df, var1_without_CAPS_node_list_df, var2_without_CAPS_node_list_df, var3_without_CAPS_node_list_df, var4_without_CAPS_node_list_df, var5_without_CAPS_node_list_df)
+
+#Writing file
+write.csv(final_without_CAPS_all_node_list_df, "~/SNArRDJF/Tese_Pedro/SemCAPS/Banco/final_without_CAPS_all_node_list_df.csv")
+```
+
